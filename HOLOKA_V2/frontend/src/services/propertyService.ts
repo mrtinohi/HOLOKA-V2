@@ -1,27 +1,22 @@
 import api from './api';
-
+import type { PageResponse, RecordStatus } from '../types';
 export interface Property {
-  id: number;
-  name: string;
-  code: string;
-  address: string;
+  id: number; workspaceId: number; name: string; code: string; address: string; description: string | null;
   propertyType: 'APARTMENT' | 'ROOM_RENTAL' | 'SERVICED_APARTMENT' | 'HOUSE' | 'BUILDING' | 'OTHER';
-  status: 'ACTIVE' | 'INACTIVE';
+  status: RecordStatus; ownerUserId: number; version: number; createdAt: string; updatedAt: string;
   totalRooms?: number;
   occupiedRooms?: number;
 }
-
-export const getProperties = async (workspaceId: number): Promise<Property[]> => {
-  try {
-    const response = await api.get(`/properties`, { params: { workspaceId } });
-    return response.data.data.items || [];
-  } catch (error) {
-    console.error('Error fetching properties', error);
-    // Fallback mock data for UI demo purposes if API isn't fully ready
-    return [
-      { id: 1, name: 'Sunrise Tower', code: 'P-SRT', address: '123 Main St, District 1, HCMC', propertyType: 'BUILDING', status: 'ACTIVE', totalRooms: 50, occupiedRooms: 45 },
-      { id: 2, name: 'Riverside Apartments', code: 'P-RVA', address: '45 River Road, District 2, HCMC', propertyType: 'SERVICED_APARTMENT', status: 'ACTIVE', totalRooms: 20, occupiedRooms: 18 },
-      { id: 3, name: 'Old Quarter House', code: 'P-OQH', address: '12 Hoan Kiem, Hanoi', propertyType: 'HOUSE', status: 'INACTIVE', totalRooms: 5, occupiedRooms: 0 },
-    ];
-  }
-};
+export type PropertyWrite = Pick<Property, 'name' | 'code' | 'address' | 'propertyType' | 'status' | 'ownerUserId'> & { description?: string; version?: number };
+export interface PropertyFilter { search?: string; status?: string; propertyType?: string; page?: number; size?: number; sort?: string }
+export async function listProperties(workspaceId: number, options: PropertyFilter = {}): Promise<PageResponse<Property>> {
+  return (await api.get('/properties', { params: { workspaceId, ...options } })).data.data;
+}
+export async function getProperties(workspaceId: number): Promise<Property[]> { return (await listProperties(workspaceId)).items; }
+export async function getProperty(workspaceId: number, id: number): Promise<Property> { return (await api.get('/properties/' + id, { params: { workspaceId } })).data.data; }
+export async function saveProperty(workspaceId: number, body: PropertyWrite, id?: number): Promise<Property> {
+  return (await api.request({ method: id ? 'PUT' : 'POST', url: '/properties' + (id ? '/' + id : ''), params: { workspaceId }, data: body })).data.data;
+}
+export async function deleteProperty(workspaceId: number, property: Property) {
+  await api.delete('/properties/' + property.id, { params: { workspaceId, version: property.version } });
+}

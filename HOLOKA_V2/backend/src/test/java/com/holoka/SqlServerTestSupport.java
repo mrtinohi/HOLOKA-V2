@@ -18,8 +18,8 @@ abstract class SqlServerTestSupport {
         var databaseNames = java.util.Arrays.stream(url.split(";"))
             .filter(part -> part.toLowerCase(java.util.Locale.ROOT).startsWith("databasename="))
             .map(part -> part.substring(part.indexOf('=') + 1)).toList();
-        if (!databaseNames.equals(java.util.List.of("holoka_newconcept_it")))
-            throw new IllegalStateException("TEST_DB_URL must explicitly target only holoka_newconcept_it");
+        if (databaseNames.size()!=1 || !java.util.Set.of("holoka_newconcept_it", "holoka_anti_it").contains(databaseNames.getFirst()))
+            throw new IllegalStateException("TEST_DB_URL must explicitly target holoka_newconcept_it or holoka_anti_it");
         registry.add("spring.datasource.url", () -> url);
         registry.add("spring.datasource.username", () -> System.getenv().getOrDefault("TEST_DB_USERNAME", ""));
         registry.add("spring.datasource.password", () -> System.getenv().getOrDefault("TEST_DB_PASSWORD", ""));

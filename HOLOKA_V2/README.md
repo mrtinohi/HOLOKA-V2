@@ -1,66 +1,105 @@
-# HOLOKA – AI-Powered Property Operations Platform
+# HOLOKA – Nền Tảng Quản Lý Bất Động Sản Thông Minh
 
-HOLOKA is a modern B2B SaaS platform designed for Property Owners, Landlords, Property Managers, and Operations Staff. It transforms traditional property CRUD management into an intelligent system that focuses on:
+HOLOKA là nền tảng B2B SaaS hiện đại dành cho Chủ sở hữu (Owners), Chủ nhà (Landlords), Quản lý vận hành (Property Managers) và Nhân viên kỹ thuật (Staff). Hệ thống chuyển đổi mô hình quản lý thủ công thành hệ thống quản lý vận hành tích hợp thông minh:
 
 **Manage → Understand → Detect → Recommend → Act → Predict**
 
-## Features Built in Phase 1
+---
 
-1. **Authentication & Security:** JWT-based stateless authentication with role-based access control.
-2. **Portfolio Management:** Manage Properties (Buildings/Houses) and nested Rooms with full occupancy tracking.
-3. **Tenant & Contract Lifecycle:** Digital contract management with strict validation to prevent overlapping active contracts for a single room.
-4. **Finance & Invoicing:** Automated tracking of rent and utilities from `DRAFT` to `PAID` or `OVERDUE`.
-5. **Maintenance & Tasking:** Track physical issues, assign tasks to staff, and monitor repair status.
-6. **AI-Powered Notification Engine:** A background `AlertScheduler` that continuously evaluates operational data against business rules to generate actionable alerts (e.g., "3 contracts expiring soon", "2 overdue payments").
-7. **Premium UX Dashboard:** A highly visual React frontend utilizing Tailwind CSS to present real-time operational insights without N+1 query issues.
+## 🚀 Các Tính Năng Chính
 
-## Technology Stack
+1. **Xác thực & Phân quyền (RBAC):** Kiến trúc phiên làm việc JWT Stateless kết hợp Refresh Token an toàn, phân quyền đa cấp (`OWNER`, `MANAGER`, `STAFF`).
+2. **Quản lý danh mục tài sản:** Quản lý phân cấp Bất động sản (Properties) → Tòa nhà (Buildings) → Phòng (Rooms) với chỉ số lấp đầy thời gian thực.
+3. **Vòng đời khách thuê & hợp đồng:** Quản lý hồ sơ khách thuê và hợp đồng điện tử với kiểm tra nghiêm ngặt ngăn chặn trùng lặp thời gian thuê của phòng.
+4. **Tài chính & Hóa đơn:** Tự động hóa chu trình thanh toán từ `DRAFT` đến `PAID` hoặc `OVERDUE`.
+5. **Vận hành & Bảo trì:** Ghi nhận sự cố, giao việc cho nhân viên, quản lý chi phí dự kiến/thực tế và theo dõi tiến độ xử lý.
+6. **Công cụ cảnh báo thông minh (Smart Alert Engine):** Bộ lập lịch nền tự động đánh giá dữ liệu vận hành theo chu kỳ (hợp đồng sắp hết hạn, hóa đơn quá hạn, phòng trống kéo dài).
+7. **Giao diện người dùng hiện đại:** Giao diện React tối ưu, phong cách thẩm mỹ cao, hiển thị báo cáo tổng hợp không bị lỗi N+1 query.
+
+---
+
+## 🛠️ Công Nghệ Sử Dụng
 
 ### Backend
-- **Framework:** Java 21 + Spring Boot 3.3.0
-- **Database:** Microsoft SQL Server (Native SQL queries for complex analytics)
-- **Migrations:** Flyway
-- **Security:** Spring Security + JWT
-- **Build Tool:** Maven
+- **Ngôn ngữ & Framework:** Java 21 + Spring Boot 3.5.16
+- **Cơ sở dữ liệu:** Microsoft SQL Server
+- **Migration:** Flyway Database Migration
+- **Bảo mật:** Spring Security 6, Nimbus JWT, BCrypt (cost 12)
+- **Quản lý gói:** Maven Wrapper
 
 ### Frontend
-- **Framework:** React 18 + TypeScript + Vite
-- **Styling:** Tailwind CSS v4
+- **Framework:** React 19 + TypeScript + Vite
+- **CSS:** Tailwind CSS v4
 - **Icons:** Lucide React
-- **Routing:** React Router v6
-- **HTTP Client:** Axios
+- **Routing:** React Router v7
+- **HTTP Client:** Axios (Interceptors xử lý CSRF và tự động làm mới JWT)
 
-## Getting Started
+---
 
-### Prerequisites
-- JDK 21
-- Node.js 18+
-- SQL Server
+## 📁 Cấu Trúc Thư Mục
 
-### 1. Database Setup
-Create a database named `holoka_newconcept_it` in SQL Server.
-Update the credentials in `backend/src/main/resources/application.properties`.
-
-### 2. Running the Backend
-```bash
-cd backend
-./mvnw spring-boot:run
+```text
+HOLOKA-anti/
+├── backend/                # Spring Boot REST API
+│   ├── src/main/java/      # Mã nguồn Java (chia theo domain: auth, property, room...)
+│   ├── src/main/resources/ # Cấu hình (application.properties, db/migration)
+│   └── pom.xml             # Quản lý dependencies Maven
+├── frontend/               # React Vite Single Page App
+│   ├── src/components/     # UI Components dùng chung
+│   ├── src/pages/          # Màn hình chức năng (Dashboard, Rooms, Tenants...)
+│   ├── src/services/       # API clients kết nối backend
+│   └── package.json        # Dependencies Node.js
+├── docs/                   # Tài liệu thiết kế & đặc tả hệ thống
+│   ├── architecture.md     # Kiến trúc hệ thống
+│   ├── database.md         # Thiết kế cơ sở dữ liệu
+│   ├── api.md              # Đặc tả API endpoints
+│   └── steps/              # Nhật ký các giai đoạn phát triển
+├── .env.example            # Mẫu biến môi trường
+└── README.md               # Hướng dẫn dự án
 ```
-The API will be available at `http://localhost:8080/api`.
-Flyway will automatically run the database migrations on startup.
 
-### 3. Running the Frontend
-```bash
+---
+
+## ⚙️ Hướng Dẫn Cài Đặt & Khởi Chạy
+
+### Yêu Cầu Tiên Quyết
+* **JDK 21**
+* **Node.js 18+** & npm
+* **Microsoft SQL Server** (chạy tại `localhost:1433`)
+
+### 1. Cơ Sở Dữ Liệu
+Tạo cơ sở dữ liệu trên SQL Server:
+```sql
+CREATE DATABASE holoka_newconcept;
+```
+*(Cấu hình kết nối mặc định tại `backend/src/main/resources/application.properties` là `sa` / `123`).*
+
+### 2. Khởi Chạy Backend
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+* API khả dụng tại: `http://localhost:8080/api`
+* Health check: `http://localhost:8080/actuator/health`
+* Flyway sẽ tự động đồng bộ schema database khi khởi động.
+
+### 3. Khởi Chạy Frontend
+```powershell
 cd frontend
 npm install
 npm run dev
 ```
-The application will be available at `http://localhost:5173`.
+* Giao diện web khả dụng tại: `http://localhost:5173`
 
-## Architecture Highlights
-- **Single-Query Dashboard:** The `DashboardRepository` uses advanced native SQL to aggregate revenue, occupancy, and task data in a single database round-trip, ensuring blazing fast load times.
-- **Serializable Locking:** The `AlertEvaluator` uses SQL Server `UPDLOCK, HOLDLOCK` hints to guarantee that background rule evaluations do not conflict if multiple backend instances are scaled horizontally.
-- **Interceptor Guarded Frontend:** The React application features robust Axios interceptors that automatically manage JWT injection and handle token expiration/401 redirects elegantly.
+---
 
-## License
-Proprietary / Closed Source.
+## 🔑 Thông Tin Đăng Nhập
+
+* **Địa chỉ Email:** `admin@holoka.vn`
+* **Mật khẩu:** `Abcd1234@`
+* **Workspace mặc định:** *An Nhiên Living* (Quyền: `OWNER`)
+
+---
+
+## 📄 Bản Quyền
+Dự án phát triển cho đồ án / hệ thống HOLOKA. Bảo lưu mọi quyền.

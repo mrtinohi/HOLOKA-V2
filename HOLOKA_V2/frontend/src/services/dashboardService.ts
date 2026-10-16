@@ -23,3 +23,26 @@ export const getDashboardOverview = async (workspaceId: number): Promise<Overvie
   });
   return response.data.data; // Assuming ApiResponse structure: { success: true, data: { ... } }
 };
+
+export interface OccupancyData {
+  propertyId: number;
+  name: string;
+  totalRooms: number;
+  occupiedRooms: number;
+  availableRooms: number;
+  rentableRooms: number;
+}
+
+export interface ChartsData {
+  revenue: { month: string; amount: number }[];
+  occupancy: OccupancyData[];
+  maintenance: { status: string; count: number }[];
+  payments: { paid: number; outstanding: number };
+}
+
+export const getDashboardCharts = async (workspaceId: number): Promise<ChartsData> => {
+  const response = await api.get(`/dashboard/charts`, {
+    params: { workspaceId }
+  });
+  return response.data.data;
+};

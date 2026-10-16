@@ -36,7 +36,7 @@ public class SecurityConfig {
         csrfRepository.setCookieCustomizer(cookie -> cookie.secure(cookieSecure).sameSite("Strict").path("/"));
         return http
             .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf.csrfTokenRepository(csrfRepository))
             .addFilterBefore(new JwtAuthenticationFilter(authenticator, mapper), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .requestCache(cache -> cache.disable())
@@ -51,9 +51,9 @@ public class SecurityConfig {
                         "/api/tenants", "/api/tenants/**", "/api/contracts", "/api/contracts/**",
                         "/api/invoices", "/api/invoices/**", "/api/payments", "/api/payments/**",
                         "/api/maintenance", "/api/maintenance/**", "/api/tasks", "/api/tasks/**",
-                        "/api/notifications", "/api/notifications/**", "/api/actions").permitAll();
+                        "/api/notifications", "/api/notifications/**", "/api/actions", "/api/dashboard/**").authenticated();
                 if (docsEnabled) auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
-                auth.anyRequest().permitAll();
+                auth.anyRequest().denyAll();
             })
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request, response, exception) -> writeError(mapper, response, HttpStatus.UNAUTHORIZED, "Authentication required"))

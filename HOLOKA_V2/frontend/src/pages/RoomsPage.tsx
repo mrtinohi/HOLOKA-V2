@@ -1,18 +1,32 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, Plus, DoorOpen, MoreVertical, CalendarClock, User } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import { getRooms, type Room } from '../services/roomService';
+import { getProperties } from '../services/propertyService';
 
 export default function RoomsPage() {
+  const { user } = useAuth();
+  const wsId = user?.workspaces?.[0]?.id ?? 1;
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Hardcoded workspaceId = 1
-    getRooms(1).then(data => {
-      setRooms(data);
+    Promise.all([
+      getRooms(wsId),
+      getProperties(wsId).catch(() => [])
+    ]).then(([roomData, propData]) => {
+      const propMap = new Map(propData.map(p => [p.id, p.name]));
+      const enriched = roomData.map(r => ({
+        ...r,
+        propertyName: r.propertyName || propMap.get(r.propertyId) || `Property #${r.propertyId}`,
+      }));
+      setRooms(enriched);
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
       setLoading(false);
     });
-  }, []);
+  }, [wsId]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -100,7 +114,7 @@ export default function RoomsPage() {
                   <div className="space-y-2 flex-1">
                      <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500">Property:</span>
-                        <span className="font-medium text-slate-700 truncate max-w-[120px]" title={room.propertyName}>{room.propertyName}</span>
+                        <span className="font-medium text-slate-700 truncate max-w-[120px]" title={room.propertyName || `Property #${room.propertyId}`}>{room.propertyName || `Property #${room.propertyId}`}</span>
                      </div>
                      <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500">Rent:</span>
@@ -118,12 +132,14 @@ export default function RoomsPage() {
                         <div className="space-y-2">
                            <div className="flex items-center gap-2 text-sm text-slate-600">
                               <User size={14} className="text-slate-400" />
-                              <span className="truncate">{room.tenantName}</span>
+                              <span className="truncate">{room.tenantName || 'Đang thuê'}</span>
                            </div>
-                           <div className="flex items-center gap-2 text-sm text-slate-600">
-                              <CalendarClock size={14} className="text-slate-400" />
-                              <span className="truncate text-xs">Ends: {room.contractEndDate}</span>
-                           </div>
+                           {room.contractEndDate && (
+                              <div className="flex items-center gap-2 text-sm text-slate-600">
+                                 <CalendarClock size={14} className="text-slate-400" />
+                                 <span className="truncate text-xs">Hết hạn: {room.contractEndDate}</span>
+                              </div>
+                           )}
                         </div>
                      ) : room.status === 'AVAILABLE' ? (
                         <div className="text-center">

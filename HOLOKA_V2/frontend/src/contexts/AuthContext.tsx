@@ -1,63 +1,47 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { refreshSession, setAccessToken } from '../services/api';
+import type { AuthResponse, UserView } from '../services/authService';
 
-interface AuthState {
-  isAuthenticated: boolean;
-  token: string | null;
-  user: any | null;
-}
-
+interface AuthState { isAuthenticated: boolean; isLoading: boolean; user: UserView | null }
 interface AuthContextType extends AuthState {
-  login: (token: string, user: any) => void;
+  login: (token: string, user: UserView) => void;
   logout: () => void;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    const token = localStorage.getItem('holoka_token');
-    const userJson = localStorage.getItem('holoka_user');
-    return {
-      isAuthenticated: !!token,
-      token,
-      user: userJson ? JSON.parse(userJson) : null,
-    };
-  });
-
-  const login = (token: string, user: any) => {
-    localStorage.setItem('holoka_token', token);
-    localStorage.setItem('holoka_user', JSON.stringify(user));
-    setAuthState({ isAuthenticated: true, token, user });
-  };
-
-  const logout = () => {
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<AuthState>({ isAuthenticated: false, isLoading: true, user: null });
+  const login = useCallback((token: string, user: UserView) => {
+    setAccessToken(token);
+    setState({ isAuthenticated: true, isLoading: false, user });
+  }, []);
+  const logout = useCallback(() => {
+    setAccessToken(null);
+    setState({ isAuthenticated: false, isLoading: false, user: null });
+  }, []);
+  useEffect(() => {
+    let active = true;
+    // Remove tokens left by the previous client; authentication now uses the server session.
     localStorage.removeItem('holoka_token');
     localStorage.removeItem('holoka_user');
-    setAuthState({ isAuthenticated: false, token: null, user: null });
-  };
-
-  useEffect(() => {
-    const handleAuthChange = () => {
-      const token = localStorage.getItem('holoka_token');
-      if (!token) {
-        logout();
-      }
+    const restored = (event: Event) => {
+      const session = (event as CustomEvent<AuthResponse>).detail;
+      if (active) login(session.accessToken, session.user);
     };
-    window.addEventListener('auth-change', handleAuthChange);
-    return () => window.removeEventListener('auth-change', handleAuthChange);
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ ...authState, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
+    window.addEventListener('session-restored', restored);
+    window.addEventListener('auth-change', logout);
+    refreshSession().catch(() => { if (active) logout(); });
+    return () => {
+      active = false;
+      window.removeEventListener('session-restored', restored);
+      window.removeEventListener('auth-change', logout);
+    };
+  }, [login, logout]);
+  return <AuthContext.Provider value={{ ...state, login, logout }}>{children}</AuthContext.Provider>;
+}
+// Kept beside its context to preserve existing imports throughout the application.
+// oxlint-disable-next-line react/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };

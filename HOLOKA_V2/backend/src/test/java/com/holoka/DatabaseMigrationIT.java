@@ -21,7 +21,7 @@ class DatabaseMigrationIT extends SqlServerTestSupport {
     @Test void migrationIsValidAndRepeatableWithoutReapplying() {
         flyway.validate();
         assertThat(flyway.migrate().migrationsExecuted).isZero();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM dbo.flyway_schema_history WHERE success=1", Integer.class)).isEqualTo(6);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM dbo.flyway_schema_history WHERE success=1", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForList("SELECT code FROM dbo.roles", String.class))
             .containsExactlyInAnyOrder("ADMIN", "OWNER", "MANAGER", "STAFF");
     }

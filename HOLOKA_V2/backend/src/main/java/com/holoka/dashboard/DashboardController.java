@@ -29,4 +29,8 @@ public class DashboardController {
             @RequestParam @Positive long workspaceId) {
         return ApiResponse.ok(service.getOverview(p, workspaceId));
     }
+    @GetMapping("/charts")
+    public ApiResponse<DashboardDtos.Charts> charts(@AuthenticationPrincipal AuthPrincipal p, @RequestParam @Positive long workspaceId) {
+        return ApiResponse.ok(service.charts(p,workspaceId));
+    }
 }
