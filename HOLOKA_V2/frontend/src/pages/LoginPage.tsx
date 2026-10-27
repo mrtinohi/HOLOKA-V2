@@ -34,6 +34,8 @@ export default function LoginPage() {
     try {
       const response = await login({ email, password });
       setAuth(response.accessToken, response.user);
+      sessionStorage.setItem('holoka_just_logged_in', 'true');
+      sessionStorage.removeItem('holoka_welcome_seen');
       navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
@@ -70,12 +72,12 @@ export default function LoginPage() {
           style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }}
         />
 
-        {/* Subtle Architectural Grid Lines */}
+        {/* Subtle Architectural Grid Lines - reduced opacity */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.015]"
           style={{
             backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-            backgroundSize: '48px 48px',
+            backgroundSize: '64px 64px',
           }}
         />
       </div>
@@ -103,7 +105,7 @@ export default function LoginPage() {
             </span>
           </h2>
 
-          <p className="text-slate-400 text-base leading-relaxed mb-8">
+          <p className="text-slate-300 text-[15px] leading-relaxed mb-8">
             {t('login.hero_subtitle')}
           </p>
 
@@ -185,7 +187,7 @@ export default function LoginPage() {
               <h3 className="text-2xl font-black text-white font-display tracking-tight">
                 {t('login.title')}
               </h3>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-slate-300 mt-2 leading-relaxed">
                 {t('login.desc')}
               </p>
             </div>
@@ -228,7 +230,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-sm font-bold text-slate-200 mb-2"
                 >
                   {t('login.email_label')}
                 </label>
@@ -244,7 +246,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="admin@holoka.vn"
-                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 transition-all duration-200"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -254,7 +256,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="login-password"
-                    className="block text-xs font-bold uppercase tracking-wider text-slate-300"
+                    className="block text-sm font-bold text-slate-200"
                   >
                     {t('login.password_label')}
                   </label>
@@ -271,7 +273,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-11 pr-12 py-3 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/25 transition-all duration-200"
+                    className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 transition-all duration-200"
                   />
                   <button
                     type="button"
@@ -288,9 +290,9 @@ export default function LoginPage() {
                 id="login-submit"
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2 py-3.5 px-4 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(99,102,241,0.4)] hover:shadow-[0_6px_28px_rgba(99,102,241,0.6)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-3 py-4 px-4 rounded-xl font-bold text-white text-base flex items-center justify-center gap-2.5 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(37,99,235,0.5)] hover:shadow-[0_6px_28px_rgba(37,99,235,0.7)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #8b5cf6 100%)',
+                  background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)',
                 }}
               >
                 {isLoading ? (

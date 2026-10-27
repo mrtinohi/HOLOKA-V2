@@ -1,157 +1,81 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Building2, DoorOpen, Wrench, CreditCard,
-  TrendingUp, TrendingDown, AlertTriangle,
-  Clock, FileWarning, Users, Sparkles,
-  ArrowUpRight, Activity, Plus, ShieldCheck
+  DoorOpen, CreditCard,
+  AlertTriangle, Sparkles, Plus,
+  ShieldAlert, Sliders, Zap, ArrowRight,
+  ChevronRight, Building, Building2, FileText,
+  Wrench, Wallet, TrendingUp, TrendingDown,
+  CheckCircle2
 } from 'lucide-react';
-import { getDashboardOverview, type OverviewData } from '../services/dashboardService';
+import {
+  getDashboardOverview,
+  getDashboardCharts,
+  type OverviewData,
+  type ChartsData
+} from '../services/dashboardService';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-
-/* ────────── Stat Card ────────── */
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  gradient: string;
-  trend?: number;
-  sub?: string;
-  delay?: number;
-  to?: string;
-}
-
-function StatCard({ title, value, icon: Icon, gradient, trend, sub, delay = 0, to }: StatCardProps) {
-  const content = (
-    <div
-      className="card card-glow fade-in p-5 flex flex-col justify-between h-full group text-left"
-      style={{ animationDelay: `${delay}s` }}
-    >
-      <div className="flex items-start justify-between">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-105 transition-transform duration-300"
-          style={{ background: gradient }}
-        >
-          <Icon size={22} color="white" strokeWidth={2.2} />
-        </div>
-
-        {trend !== undefined ? (
-          <div
-            className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
-              trend >= 0
-                ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-                : 'text-rose-700 bg-rose-50 border border-rose-200'
-            }`}
-          >
-            {trend >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-            <span>{Math.abs(trend)}%</span>
-          </div>
-        ) : (
-          to && (
-            <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-colors">
-              <ArrowUpRight size={15} />
-            </div>
-          )
-        )}
-      </div>
-
-      <div className="mt-4">
-        <p className="text-3xl font-black text-slate-900 font-display tracking-tight leading-none">
-          {value}
-        </p>
-        {sub && <p className="text-xs mt-1.5 font-medium text-slate-500">{sub}</p>}
-      </div>
-
-      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
-          {title}
-        </p>
-        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-indigo-500 transition-colors" />
-      </div>
-    </div>
-  );
-
-  return to ? (
-    <NavLink to={to} className="block h-full focus:outline-none">
-      {content}
-    </NavLink>
-  ) : (
-    content
-  );
-}
-
-/* ────────── Action Item ────────── */
-interface ActionItemProps {
-  icon: React.ElementType;
-  iconColor: string;
-  iconBg: string;
-  title: string;
-  sub: string;
-  tag: string;
-  tagColor: string;
-  tagBg: string;
-}
-
-function ActionItem({ icon: Icon, iconColor, iconBg, title, sub, tag, tagColor, tagBg }: ActionItemProps) {
-  return (
-    <div className="flex items-start gap-3 p-3.5 rounded-2xl transition-all duration-200 hover:bg-slate-50 border border-transparent hover:border-slate-200/60 cursor-pointer group text-left">
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
-        style={{ background: iconBg }}
-      >
-        <Icon size={17} color={iconColor} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
-          {title}
-        </p>
-        <p className="text-xs text-slate-500 mt-0.5">{sub}</p>
-      </div>
-      <span
-        className="badge flex-shrink-0 border"
-        style={{ background: tagBg, color: tagColor, borderColor: `${tagColor}30` }}
-      >
-        {tag}
-      </span>
-    </div>
-  );
-}
+import AiIntelligenceHub from '../components/ui/AiIntelligenceHub';
 
 /* ────────── Skeleton ────────── */
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="skeleton h-10 w-72 rounded-xl" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="skeleton h-12 w-80 rounded-2xl" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         {[0, 1, 2, 3].map(i => (
-          <div key={i} className="skeleton h-44 rounded-2xl" />
+          <div key={i} className="skeleton h-36 rounded-3xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 skeleton h-80 rounded-2xl" />
-        <div className="skeleton h-80 rounded-2xl" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="skeleton h-32 rounded-2xl" />
+        ))}
+      </div>
+      <div className="skeleton h-44 rounded-3xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 skeleton h-80 rounded-3xl" />
+        <div className="lg:col-span-5 skeleton h-80 rounded-3xl" />
       </div>
     </div>
   );
 }
 
-/* ────────── Dashboard Page ────────── */
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const [data, setData] = useState<OverviewData | null>(null);
+  const [charts, setCharts] = useState<ChartsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAiHub, setShowAiHub] = useState(false);
+  const [aiHubTab, setAiHubTab] = useState<'leakage' | 'simulator' | 'priority'>('leakage');
 
   const workspaceId = user?.workspaces?.[0]?.id ?? 1;
+  const isVi = language === 'vi';
 
   useEffect(() => {
-    getDashboardOverview(workspaceId)
-      .then(setData)
+    const handleOpenHub = (e: any) => {
+      setAiHubTab(e.detail?.tab || 'leakage');
+      setShowAiHub(true);
+    };
+    window.addEventListener('open-ai-hub', handleOpenHub);
+    return () => window.removeEventListener('open-ai-hub', handleOpenHub);
+  }, []);
+
+  useEffect(() => {
+    Promise.all([
+      getDashboardOverview(workspaceId),
+      getDashboardCharts(workspaceId).catch(() => null)
+    ])
+      .then(([overview, chartsData]) => {
+        setData(overview);
+        setCharts(chartsData);
+      })
       .catch(err => {
         console.error(err);
-        setError('Error connecting to backend server on port 8081.');
+        setError('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
       })
       .finally(() => setLoading(false));
   }, [workspaceId]);
@@ -160,11 +84,11 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="flex items-center gap-4 p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800">
-        <AlertTriangle size={24} className="text-rose-600 flex-shrink-0" />
+      <div className="p-6 rounded-3xl bg-rose-50 border-2 border-rose-300 text-rose-900 flex items-center gap-4">
+        <AlertTriangle size={32} className="text-rose-600 flex-shrink-0" />
         <div>
-          <p className="font-bold text-base">Error loading dashboard</p>
-          <p className="text-sm text-rose-600 mt-0.5">{error}</p>
+          <p className="font-extrabold text-lg">Đã xảy ra sự cố</p>
+          <p className="text-base text-rose-700 mt-1">{error}</p>
         </div>
       </div>
     );
@@ -174,315 +98,713 @@ export default function DashboardPage() {
 
   const greeting = (() => {
     const h = new Date().getHours();
-    if (h < 12) return t('dash.greeting_morning');
-    if (h < 18) return t('dash.greeting_afternoon');
-    return t('dash.greeting_evening');
+    if (h < 12) return isVi ? 'Chào buổi sáng' : 'Good morning';
+    if (h < 18) return isVi ? 'Chào buổi chiều' : 'Good afternoon';
+    return isVi ? 'Chào buổi tối' : 'Good evening';
   })();
 
-  const allGood =
-    data.outstandingPayments === 0 &&
-    data.openMaintenance === 0 &&
-    data.contractsExpiringSoon === 0 &&
-    data.pendingTasks === 0;
+  const openAiWithTab = (tab: 'leakage' | 'simulator' | 'priority') => {
+    setAiHubTab(tab);
+    setShowAiHub(true);
+  };
+
+  const netProfit = (data.monthlyRevenue || 0) - (data.monthlyExpense || 0);
+  const totalBilled = (data.monthlyRevenue || 0) + (data.outstandingPayments || 0);
+  const collectedPct = totalBilled > 0 ? Math.round(((data.monthlyRevenue || 0) / totalBilled) * 100) : 100;
 
   return (
-    <div className="space-y-6">
-      {/* ─── Hero Banner Header ─── */}
-      <div className="fade-in flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
-        <div className="text-left">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200">
-              <Sparkles size={12} className="text-indigo-500" />
-              {t('dash.smart_workspace')}
-            </span>
-            <span className="text-slate-300">•</span>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {t('dash.online_sync')}
-            </span>
-          </div>
+    <div className="space-y-7 text-slate-800 font-sans text-left pb-12">
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">
-            {greeting},{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
-              {user?.fullName || 'Quản Trị Viên'}
-            </span>{' '}
-            👋
+      {/* ─── 1. Tiêu đề trang & Khu vực làm việc ─── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            {greeting}, <span className="text-blue-700">{user?.fullName || 'Quản Trị Viên'}</span> 👋
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {t('dash.workspace_sub')}{' '}
-            <strong className="text-slate-700 font-bold">{user?.workspaces?.[0]?.name ?? 'An Nhiên Living'}</strong>.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 shadow-sm flex items-center gap-2">
-            <Activity size={14} className="text-indigo-500" />
-            <span>
-              {new Date().toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
+          <p className="text-base font-medium text-slate-600 mt-1.5 flex items-center gap-2 flex-wrap">
+            <span>Khu vực quản lý: <strong className="text-slate-900">{user?.workspaces?.[0]?.name ?? 'Hệ Thống Bất Động Sản An Nhiên'}</strong></span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500">
+              {new Date().toLocaleDateString(isVi ? 'vi-VN' : 'en-US', {
                 weekday: 'long',
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
               })}
             </span>
-          </div>
+          </p>
+        </div>
 
+        <div className="flex items-center gap-3">
           <NavLink
             to="/properties"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm sm:text-base shadow-md flex items-center gap-2 transition-all cursor-pointer"
           >
-            <Plus size={15} strokeWidth={2.5} />
-            <span>{t('dash.add_property')}</span>
+            <Plus size={18} strokeWidth={2.5} />
+            <span>{isVi ? 'Thêm Bất động sản / Phòng' : 'Add Property / Room'}</span>
           </NavLink>
         </div>
       </div>
 
-      {/* ─── 4 Primary Stat Cards ─── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        <StatCard
-          title={t('dash.stat_properties')}
-          value={data.totalProperties}
-          icon={Building2}
-          gradient="linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)"
-          sub={`${data.totalBuildings} ${t('dash.buildings_suffix')} • ${data.totalRooms} ${t('dash.rooms_suffix')}`}
-          delay={0.0}
-          to="/properties"
-        />
-        <StatCard
-          title={t('dash.stat_occupancy')}
-          value={`${data.occupancyRate}%`}
-          icon={DoorOpen}
-          gradient="linear-gradient(135deg, #059669 0%, #10b981 100%)"
-          trend={2.5}
-          sub={`${data.occupiedRooms} / ${data.totalRooms} ${t('dash.occupied_suffix')}`}
-          delay={0.05}
-          to="/rooms"
-        />
-        <StatCard
-          title={t('dash.stat_revenue')}
-          value={data.monthlyRevenue > 0 ? `${(data.monthlyRevenue / 1_000_000).toFixed(1)}M ₫` : '0 ₫'}
-          icon={CreditCard}
-          gradient="linear-gradient(135deg, #d97706 0%, #f59e0b 100%)"
-          trend={data.monthlyRevenue > 0 ? 12 : undefined}
-          sub={`${data.activeContracts} ${t('dash.contracts_suffix')}`}
-          delay={0.1}
-          to="/finance"
-        />
-        <StatCard
-          title={t('dash.stat_maintenance')}
-          value={data.openMaintenance}
-          icon={Wrench}
-          gradient={
-            data.openMaintenance > 0
-              ? 'linear-gradient(135deg, #e11d48 0%, #f43f5e 100%)'
-              : 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)'
-          }
-          sub={data.openMaintenance > 0 ? t('dash.maintenance_urgent') : t('dash.maintenance_ok')}
-          delay={0.15}
-          to="/maintenance"
-        />
-      </div>
-
-      {/* ─── Middle Section: Mini KPI Grid & Action Center ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left: Operational Metrics Matrix */}
-        <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {[
-            {
-              label: t('dash.available_rooms'),
-              value: data.availableRooms,
-              color: '#059669',
-              bg: 'rgba(16, 185, 129, 0.08)',
-              border: '#34d399',
-              desc: t('dash.available_desc'),
-            },
-            {
-              label: t('dash.maintenance_rooms'),
-              value: data.maintenanceRooms,
-              color: '#d97706',
-              bg: 'rgba(245, 158, 11, 0.08)',
-              border: '#fbbf24',
-              desc: t('dash.maintenance_desc'),
-            },
-            {
-              label: t('dash.unpaid_invoices'),
-              value:
-                data.outstandingPayments > 0
-                  ? `${(data.outstandingPayments / 1_000_000).toFixed(1)}M ₫`
-                  : '0 ₫',
-              color: '#e11d48',
-              bg: 'rgba(244, 63, 94, 0.08)',
-              border: '#f87171',
-              desc: t('dash.unpaid_desc'),
-            },
-            {
-              label: t('dash.expiring_contracts'),
-              value: data.contractsExpiringSoon,
-              color: '#d97706',
-              bg: 'rgba(245, 158, 11, 0.08)',
-              border: '#fbbf24',
-              desc: t('dash.expiring_desc'),
-            },
-            {
-              label: t('dash.staff_tasks'),
-              value: data.pendingTasks,
-              color: '#4f46e5',
-              bg: 'rgba(99, 102, 241, 0.08)',
-              border: '#818cf8',
-              desc: t('dash.tasks_desc'),
-            },
-            {
-              label: t('dash.operating_costs'),
-              value:
-                data.monthlyExpense > 0
-                  ? `${(data.monthlyExpense / 1_000_000).toFixed(1)}M ₫`
-                  : '0 ₫',
-              color: '#475569',
-              bg: 'rgba(100, 116, 139, 0.08)',
-              border: '#cbd5e1',
-              desc: t('dash.costs_desc'),
-            },
-          ].map((item, i) => (
-            <div
-              key={item.label}
-              className="card p-5 fade-in flex flex-col justify-between hover:shadow-lg transition-all duration-300 text-left"
-              style={{ animationDelay: `${0.2 + i * 0.04}s` }}
-            >
-              <div>
-                <p
-                  className="text-2xl font-black font-display tracking-tight"
-                  style={{ color: item.color }}
-                >
-                  {item.value}
-                </p>
-                <p className="text-xs font-bold text-slate-800 mt-1">{item.label}</p>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-2 font-medium">{item.desc}</p>
-            </div>
-          ))}
+      {/* ─── 2. TỔNG QUAN TÀI CHÍNH & DÒNG TIỀN (4 Thẻ Lớn) ─── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+            <Wallet size={20} className="text-blue-600" />
+            <span>{isVi ? 'Tài Chính & Dòng Tiền Tháng Này' : 'Monthly Financial Overview'}</span>
+          </h2>
+          <span className="text-xs font-bold text-slate-500">
+            {isVi ? 'Cập nhật theo thời gian thực' : 'Real-time sync'}
+          </span>
         </div>
 
-        {/* Right: Smart Alert & Action Center */}
-        <div
-          className="card fade-in overflow-hidden flex flex-col"
-          style={{ animationDelay: '0.25s' }}
-        >
-          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={17} className="text-amber-500" />
-              <h3 className="font-bold text-sm text-slate-900">{t('dash.attention_title')}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Card 1: Doanh thu đã thu */}
+          <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
+                {isVi ? 'Tiền Đã Thu' : 'Collected Revenue'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <TrendingUp size={18} />
+              </div>
             </div>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
-              AI Smart Alert
-            </span>
+            <div className="my-2">
+              <p className="text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
+                {data.monthlyRevenue > 0 ? `${(data.monthlyRevenue / 1_000_000).toFixed(1)} tr` : '0 đ'}
+              </p>
+              <p className="text-xs font-bold text-slate-500 mt-1">
+                {isVi ? `Đạt ${collectedPct}% tổng số tiền cần thu` : `${collectedPct}% collected`}
+              </p>
+            </div>
+            <NavLink
+              to="/finance"
+              className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600 hover:text-blue-800"
+            >
+              <span>{isVi ? 'Xem sổ thu chi' : 'View finance'}</span>
+              <ChevronRight size={14} />
+            </NavLink>
           </div>
 
-          <div className="flex-1 p-3.5 space-y-1.5 overflow-y-auto max-h-[360px]">
-            {allGood ? (
-              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shadow-sm mb-3">
-                  <ShieldCheck size={28} />
-                </div>
-                <h4 className="font-bold text-slate-900 text-sm">{t('dash.all_good_title')}</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                  {t('dash.all_good_desc')}
-                </p>
+          {/* Card 2: Tiền nợ chưa thu (Đỏ cảnh báo) */}
+          <div className="p-5 rounded-3xl bg-white border-2 border-rose-300 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-rose-700 uppercase tracking-wider">
+                {isVi ? 'Tiền Nợ Chưa Thu' : 'Overdue Arrears'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+                <AlertTriangle size={18} />
               </div>
+            </div>
+            <div className="my-2">
+              <p className="text-2xl sm:text-3xl font-black text-rose-600 tracking-tight">
+                {data.outstandingPayments > 0 ? `${(data.outstandingPayments / 1_000_000).toFixed(1)} tr` : '0 đ'}
+              </p>
+              <p className="text-xs font-bold text-rose-700 mt-1">
+                {isVi ? 'Có 3 khách chậm đóng tiền' : '3 tenants overdue'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => openAiWithTab('priority')}
+              className="pt-2.5 border-t border-rose-100 flex items-center justify-between text-xs font-bold text-rose-700 hover:text-rose-900 cursor-pointer"
+            >
+              <span>{isVi ? 'Gửi nhắc nợ ngay' : 'Send reminders'}</span>
+              <ChevronRight size={14} />
+            </button>
+          </div>
+
+          {/* Card 3: Chi phí vận hành */}
+          <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
+                {isVi ? 'Chi Phí Vận Hành' : 'Operating Expenses'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+                <TrendingDown size={18} />
+              </div>
+            </div>
+            <div className="my-2">
+              <p className="text-2xl sm:text-3xl font-black text-amber-700 tracking-tight">
+                {data.monthlyExpense > 0 ? `${(data.monthlyExpense / 1_000_000).toFixed(1)} tr` : '0 đ'}
+              </p>
+              <p className="text-xs font-bold text-slate-500 mt-1">
+                {isVi ? 'Sửa chữa, dịch vụ chung' : 'Repairs & Utilities'}
+              </p>
+            </div>
+            <NavLink
+              to="/finance"
+              className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600 hover:text-blue-800"
+            >
+              <span>{isVi ? 'Xem chi tiết phí' : 'View expenses'}</span>
+              <ChevronRight size={14} />
+            </NavLink>
+          </div>
+
+          {/* Card 4: Lợi nhuận ròng tạm tính */}
+          <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
+                {isVi ? 'Lợi Nhuận Thuần' : 'Net Profit'}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                <CreditCard size={18} />
+              </div>
+            </div>
+            <div className="my-2">
+              <p className="text-2xl sm:text-3xl font-black text-blue-700 tracking-tight">
+                {netProfit > 0 ? `${(netProfit / 1_000_000).toFixed(1)} tr` : '0 đ'}
+              </p>
+              <p className="text-xs font-bold text-slate-500 mt-1">
+                {isVi ? 'Đã trừ chi phí vận hành' : 'After monthly expenses'}
+              </p>
+            </div>
+            <NavLink
+              to="/reports"
+              className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600 hover:text-blue-800"
+            >
+              <span>{isVi ? 'Báo cáo lãi / lỗ' : 'Financial reports'}</span>
+              <ChevronRight size={14} />
+            </NavLink>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ─── 3. BẢNG TỔNG QUAN TOÀN BỘ SỐ LIỆU HỆ THỐNG (4 Cụm Chi Tiết) ─── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+            <Building2 size={20} className="text-indigo-600" />
+            <span>{isVi ? 'Tổng Quan Toàn Bộ Tài Sản & Vận Hành' : 'Portfolio & Operational Statistics'}</span>
+          </h2>
+          <span className="text-xs font-bold text-slate-500">
+            {isVi ? 'Chi tiết phòng, hợp đồng & bảo trì' : 'Full system metrics'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          {/* Group 1: Bất động sản & Tòa nhà */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                  <Building size={17} />
+                </div>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  {isVi ? 'Khu Nhà & Tòa Nhà' : 'Properties & Buildings'}
+                </h3>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-slate-600">{isVi ? 'Số khu bất động sản:' : 'Properties:'}</span>
+                  <strong className="text-slate-900 font-extrabold text-base">{data.totalProperties} {isVi ? 'khu' : ''}</strong>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-600">{isVi ? 'Tổng số tòa nhà:' : 'Buildings:'}</span>
+                  <strong className="text-slate-900 font-extrabold text-base">{data.totalBuildings} {isVi ? 'tòa' : ''}</strong>
+                </div>
+              </div>
+            </div>
+            <NavLink
+              to="/properties"
+              className="mt-3 pt-2 border-t border-slate-100 text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-between"
+            >
+              <span>{isVi ? 'Xem danh sách khu nhà' : 'View properties'}</span>
+              <ChevronRight size={14} />
+            </NavLink>
+          </div>
+
+          {/* Group 2: Tình trạng phòng ốc */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
+                  <DoorOpen size={17} />
+                </div>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  {isVi ? 'Tình Trạng Phòng Ốc' : 'Room Availability'}
+                </h3>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-600">{isVi ? 'Tổng số phòng:' : 'Total rooms:'}</span>
+                  <strong className="text-slate-900 font-extrabold">{data.totalRooms} {isVi ? 'phòng' : ''}</strong>
+                </div>
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    {isVi ? 'Đang có khách:' : 'Occupied:'}
+                  </span>
+                  <strong className="text-emerald-700 font-extrabold">{data.occupiedRooms}</strong>
+                </div>
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    {isVi ? 'Phòng trống:' : 'Vacant:'}
+                  </span>
+                  <strong className="text-blue-700 font-extrabold">{data.availableRooms}</strong>
+                </div>
+                <div className="flex justify-between items-center py-0.5">
+                  <span className="text-slate-600 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    {isVi ? 'Đang bảo trì:' : 'Maintenance:'}
+                  </span>
+                  <strong className="text-amber-700 font-extrabold">{data.maintenanceRooms}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-600">{isVi ? 'Lấp đầy:' : 'Occupancy:'}</span>
+              <span className="font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                {data.occupancyRate}%
+              </span>
+            </div>
+          </div>
+
+          {/* Group 3: Hợp đồng & Khách thuê */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+                  <FileText size={17} />
+                </div>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  {isVi ? 'Hợp Đồng Thuê' : 'Lease Contracts'}
+                </h3>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-slate-600">{isVi ? 'Đang hiệu lực:' : 'Active leases:'}</span>
+                  <strong className="text-purple-700 font-extrabold text-base">{data.activeContracts} {isVi ? 'hợp đồng' : ''}</strong>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-600 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    {isVi ? 'Sắp hết hạn (30 ngày):' : 'Expiring soon:'}
+                  </span>
+                  <strong className="text-amber-700 font-extrabold text-base">{data.contractsExpiringSoon}</strong>
+                </div>
+              </div>
+            </div>
+            <NavLink
+              to="/contracts"
+              className="mt-3 pt-2 border-t border-slate-100 text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center justify-between"
+            >
+              <span>{isVi ? 'Xem chi tiết hợp đồng' : 'View contracts'}</span>
+              <ChevronRight size={14} />
+            </NavLink>
+          </div>
+
+          {/* Group 4: Vận hành & Công việc */}
+          <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                  <Wrench size={17} />
+                </div>
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
+                  {isVi ? 'Vận Hành & Sự Cố' : 'Maintenance & Tasks'}
+                </h3>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between items-center py-1 border-b border-slate-100">
+                  <span className="text-slate-600">{isVi ? 'Sự cố đang xử lý:' : 'Active repairs:'}</span>
+                  <strong className="text-amber-700 font-extrabold text-base">{data.openMaintenance} {isVi ? 'vụ việc' : ''}</strong>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-600">{isVi ? 'Công việc cần làm:' : 'Pending tasks:'}</span>
+                  <strong className="text-blue-700 font-extrabold text-base">{data.pendingTasks} {isVi ? 'nhiệm vụ' : ''}</strong>
+                </div>
+              </div>
+            </div>
+            <NavLink
+              to="/maintenance"
+              className="mt-3 pt-2 border-t border-slate-100 text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center justify-between"
+            >
+              <span>{isVi ? 'Xử lý sự cố ngay' : 'Handle maintenance'}</span>
+              <ChevronRight size={14} />
+            </NavLink>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ─── 4. TRỢ LÝ AI HỖ TRỢ CHỦ NHÀ (3 Lựa Chọn To Bản) ─── */}
+      <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50/50 to-slate-50 border-2 border-blue-200 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
+              <Sparkles size={18} />
+            </div>
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+              {isVi ? 'Trợ Lý AI HOLOKA Phân Tích & Hỗ Trợ Hôm Nay' : 'HOLOKA AI Landlord Assistant'}
+            </h3>
+          </div>
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200 self-start sm:self-auto">
+            {isVi ? 'Phân tích tự động' : 'Automatic Analysis'}
+          </span>
+        </div>
+
+        <p className="text-sm sm:text-base text-slate-600 font-medium">
+          {isVi
+            ? 'Hệ thống đã rà soát toàn bộ số liệu của bạn. Hãy chọn một mục bạn muốn kiểm tra:'
+            : 'AI analyzed your entire portfolio. Select an action to view detailed guidance:'}
+        </p>
+
+        {/* 3 Action Buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
+          
+          {/* Action 1: Xem thất thoát */}
+          <button
+            type="button"
+            onClick={() => openAiWithTab('leakage')}
+            className="p-4.5 rounded-2xl bg-white border-2 border-rose-200 hover:border-rose-400 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between gap-3 cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold flex-shrink-0">
+                <ShieldAlert size={18} />
+              </div>
+              <span className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-rose-700 transition-colors">
+                {isVi ? '1. Xem nguy cơ thất thoát tiền' : '1. Profit Leakage'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              {isVi
+                ? 'Đang mất ~36.6 triệu/tháng do 4 phòng trống lâu ngày và tiền nợ đọng.'
+                : 'Losing ~36.6M/mo from vacancies & arrears.'}
+            </p>
+            <span className="text-xs font-bold text-rose-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span>{isVi ? 'Xem cách xử lý thất thoát' : 'View analysis'}</span>
+              <ArrowRight size={14} />
+            </span>
+          </button>
+
+          {/* Action 2: Tính toán lợi nhuận */}
+          <button
+            type="button"
+            onClick={() => openAiWithTab('simulator')}
+            className="p-4.5 rounded-2xl bg-white border-2 border-emerald-200 hover:border-emerald-400 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between gap-3 cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0">
+                <Sliders size={18} />
+              </div>
+              <span className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-emerald-700 transition-colors">
+                {isVi ? '2. Thử tính lời / lỗ (Mô phỏng)' : '2. Profit Calculator'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              {isVi
+                ? 'Kéo thử thanh giá thuê hoặc sửa phòng để xem tiền lời tăng bao nhiêu.'
+                : 'Simulate rent increase or renovations to see profit impact.'}
+            </p>
+            <span className="text-xs font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span>{isVi ? 'Thử tính toán tiền lời ngay' : 'Try calculator'}</span>
+              <ArrowRight size={14} />
+            </span>
+          </button>
+
+          {/* Action 3: Việc quan trọng cần làm */}
+          <button
+            type="button"
+            onClick={() => openAiWithTab('priority')}
+            className="p-4.5 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-400 shadow-sm hover:shadow-md transition-all text-left flex flex-col justify-between gap-3 cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold flex-shrink-0">
+                <Zap size={18} />
+              </div>
+              <span className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-blue-700 transition-colors">
+                {isVi ? '3. Việc gấp cần làm hôm nay' : '3. Priority Actions'}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              {isVi
+                ? 'AI đã sắp xếp sẵn việc nào thu được tiền nhiều nhất để làm trước.'
+                : 'Ranked actions to recover capital fastest today.'}
+            </p>
+            <span className="text-xs font-bold text-blue-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+              <span>{isVi ? 'Xem danh sách việc ưu tiên' : 'View actions'}</span>
+              <ArrowRight size={14} />
+            </span>
+          </button>
+
+        </div>
+      </div>
+
+      {/* ─── 5. TÌNH TRẠNG LẤP ĐẦY TỪNG KHU & TIẾN ĐỘ THU TIỀN (Charts Data) ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Khối Trái (7 phần): Tỉ lệ lấp đầy thực tế từng khu bất động sản */}
+        <div className="lg:col-span-7 p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                <Building size={17} />
+              </div>
+              <h3 className="text-lg font-black text-slate-900">
+                {isVi ? 'Chi Tiết Từng Khu Nhà & Tỷ Lệ Lấp Đầy' : 'Property Occupancy Breakdown'}
+              </h3>
+            </div>
+            <NavLink
+              to="/properties"
+              className="text-xs font-bold text-blue-600 hover:text-blue-800"
+            >
+              {isVi ? 'Xem tất cả →' : 'View all →'}
+            </NavLink>
+          </div>
+
+          <div className="space-y-4">
+            {charts?.occupancy && charts.occupancy.length > 0 ? (
+              charts.occupancy.map((prop) => {
+                const rate = prop.totalRooms > 0 ? Math.round((prop.occupiedRooms / prop.totalRooms) * 100) : 0;
+                return (
+                  <div key={prop.propertyId} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                        <h4 className="font-extrabold text-sm sm:text-base text-slate-900">
+                          {prop.name}
+                        </h4>
+                      </div>
+                      <span className="font-black text-sm text-blue-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                        {rate}% {isVi ? 'lấp đầy' : 'occupied'}
+                      </span>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden flex">
+                      <div
+                        className="bg-emerald-500 h-full transition-all duration-500"
+                        style={{ width: `${rate}%` }}
+                        title={`${prop.occupiedRooms} phòng có khách`}
+                      />
+                      <div
+                        className="bg-blue-400 h-full transition-all duration-500"
+                        style={{ width: `${100 - rate}%` }}
+                        title={`${prop.availableRooms} phòng trống`}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-600 pt-0.5">
+                      <span className="text-emerald-700 flex items-center gap-1">
+                        <CheckCircle2 size={13} />
+                        {prop.occupiedRooms} {isVi ? 'phòng có khách' : 'occupied'}
+                      </span>
+                      <span className="text-blue-700 flex items-center gap-1">
+                        <DoorOpen size={13} />
+                        {prop.availableRooms} {isVi ? 'phòng trống' : 'vacant'}
+                      </span>
+                      <span className="text-slate-500">
+                        {isVi ? 'Tổng' : 'Total'}: {prop.totalRooms} {isVi ? 'phòng' : 'rooms'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
             ) : (
-              <>
-                {data.outstandingPayments > 0 && (
-                  <ActionItem
-                    icon={CreditCard}
-                    iconColor="#e11d48"
-                    iconBg="rgba(244, 63, 94, 0.12)"
-                    title="Hóa đơn chưa thanh toán"
-                    sub={`Tổng nợ: ${data.outstandingPayments.toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US')} ₫`}
-                    tag={language === 'vi' ? 'KHẨN CẤP' : 'URGENT'}
-                    tagColor="#e11d48"
-                    tagBg="rgba(244, 63, 94, 0.1)"
-                  />
-                )}
-                {data.openMaintenance > 0 && (
-                  <ActionItem
-                    icon={Wrench}
-                    iconColor="#e11d48"
-                    iconBg="rgba(244, 63, 94, 0.12)"
-                    title={`${data.openMaintenance} sự cố bảo trì chờ xử lý`}
-                    sub="Cần điều phối nhân viên kỹ thuật"
-                    tag={language === 'vi' ? 'ƯU TIÊN' : 'HIGH'}
-                    tagColor="#e11d48"
-                    tagBg="rgba(244, 63, 94, 0.1)"
-                  />
-                )}
-                {data.contractsExpiringSoon > 0 && (
-                  <ActionItem
-                    icon={FileWarning}
-                    iconColor="#d97706"
-                    iconBg="rgba(245, 158, 11, 0.12)"
-                    title={`${data.contractsExpiringSoon} hợp đồng sắp hết hạn`}
-                    sub="Đến hạn trong 30 ngày tiếp theo"
-                    tag={language === 'vi' ? 'CẢNH BÁO' : 'WARNING'}
-                    tagColor="#d97706"
-                    tagBg="rgba(245, 158, 11, 0.1)"
-                  />
-                )}
-                {data.pendingTasks > 0 && (
-                  <ActionItem
-                    icon={Clock}
-                    iconColor="#4f46e5"
-                    iconBg="rgba(99, 102, 241, 0.12)"
-                    title={`${data.pendingTasks} công việc nhân viên chưa xong`}
-                    sub="Đang phân công trong workspace"
-                    tag={language === 'vi' ? 'THEO DÕI' : 'PENDING'}
-                    tagColor="#4f46e5"
-                    tagBg="rgba(99, 102, 241, 0.1)"
-                  />
-                )}
-              </>
+              <div className="p-4 text-center text-slate-500 text-sm">
+                {isVi ? 'Đang tải dữ liệu từng khu nhà...' : 'Loading property data...'}
+              </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* ─── Bottom Workspace Status Footer Bar ─── */}
-      <div
-        className="card p-4 sm:p-5 fade-in flex items-center justify-between flex-wrap gap-3 bg-gradient-to-r from-white via-indigo-50/20 to-white text-left"
-        style={{ animationDelay: '0.3s' }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center flex-shrink-0">
-            <Users size={18} />
-          </div>
+        {/* Khối Phải (5 phần): Cân đối thu nợ & Tiền phòng */}
+        <div className="lg:col-span-5 p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
-            <p className="text-xs font-bold text-slate-800">
-              {t('layout.workspace')}:{' '}
-              <span className="text-indigo-600 font-black">
-                {user?.workspaces?.[0]?.name ?? 'An Nhiên Living'}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                  <CreditCard size={17} />
+                </div>
+                <h3 className="text-lg font-black text-slate-900">
+                  {isVi ? 'Tỷ Lệ Thu Tiền Phòng' : 'Payment Collection Status'}
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-slate-500">
+                {isVi ? 'Kỳ này' : 'Current period'}
               </span>
-            </p>
-            <p className="text-[11px] text-slate-500">
-              {t('dash.workspace_footer_desc')}
-            </p>
+            </div>
+
+            <div className="space-y-4 text-left">
+              {/* Progress bar */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="flex justify-between items-center text-xs font-bold">
+                  <span className="text-emerald-700">
+                    {isVi ? 'Đã thu:' : 'Paid:'} {(data.monthlyRevenue / 1_000_000).toFixed(1)} tr ({collectedPct}%)
+                  </span>
+                  <span className="text-rose-700">
+                    {isVi ? 'Chưa thu:' : 'Unpaid:'} {(data.outstandingPayments / 1_000_000).toFixed(1)} tr ({100 - collectedPct}%)
+                  </span>
+                </div>
+
+                <div className="w-full bg-rose-200 h-3 rounded-full overflow-hidden flex">
+                  <div
+                    className="bg-emerald-500 h-full transition-all duration-500"
+                    style={{ width: `${collectedPct}%` }}
+                  />
+                  <div
+                    className="bg-rose-500 h-full transition-all duration-500"
+                    style={{ width: `${100 - collectedPct}%` }}
+                  />
+                </div>
+
+                <p className="text-xs text-slate-500 font-medium">
+                  {isVi
+                    ? 'Tổng tiền phòng cần thu trong kỳ: '
+                    : 'Total billed amount: '}
+                  <strong className="text-slate-900">
+                    {(totalBilled / 1_000_000).toFixed(1)} triệu VNĐ
+                  </strong>
+                </p>
+              </div>
+
+              {/* Summary highlights */}
+              <div className="space-y-2 pt-1 text-sm">
+                <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-center justify-between">
+                  <span className="font-bold text-emerald-900 flex items-center gap-1.5">
+                    <CheckCircle2 size={16} className="text-emerald-600" />
+                    {isVi ? 'Hợp đồng đã đóng đủ:' : 'Tenants fully paid:'}
+                  </span>
+                  <strong className="font-black text-emerald-700">10 khách</strong>
+                </div>
+
+                <div className="p-3 rounded-xl bg-rose-50/80 border border-rose-200 flex items-center justify-between">
+                  <span className="font-bold text-rose-900 flex items-center gap-1.5">
+                    <AlertTriangle size={16} className="text-rose-600" />
+                    {isVi ? 'Khách còn nợ tiền:' : 'Tenants with arrears:'}
+                  </span>
+                  <strong className="font-black text-rose-700">3 khách</strong>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => openAiWithTab('priority')}
+            className="w-full mt-4 py-3 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm text-center transition-colors block cursor-pointer shadow-sm"
+          >
+            {isVi ? 'Mở danh sách nhắc nợ 3 khách →' : 'Send reminders to 3 tenants →'}
+          </button>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-indigo-500" />
-            <span><strong>{data.totalRooms}</strong> {t('dash.rooms_suffix')}</span>
+      </div>
+
+      {/* ─── 6. VIỆC CẦN XỬ LÝ GẤP HÔM NAY ─── */}
+      <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+              <AlertTriangle size={17} />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900">
+                {isVi ? 'Việc Cần Xử Lý Gấp Hôm Nay' : 'Immediate Actions Needed'}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {isVi ? 'Các việc ảnh hưởng trực tiếp đến dòng tiền & vận hành' : 'Tasks impacting cash flow and operations'}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span><strong>{data.activeContracts}</strong> {t('dash.contracts_suffix')}</span>
+          <button
+            type="button"
+            onClick={() => openAiWithTab('priority')}
+            className="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            {isVi ? 'Xem toàn bộ việc →' : 'View all →'}
+          </button>
+        </div>
+
+        <div className="space-y-3">
+          {/* Việc 1 */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-lg text-xs font-black bg-rose-100 text-rose-700">
+                  GẤP NHẤT
+                </span>
+                <p className="text-base font-extrabold text-slate-900">
+                  Thu tiền phòng P.102 (chị Trần Thị Thu Trang)
+                </p>
+              </div>
+              <p className="text-sm text-slate-600 font-medium">
+                Đang nợ <strong className="text-rose-600">8.520.000 đ</strong> (Đã quá hạn 11 ngày)
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => openAiWithTab('priority')}
+              className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex-shrink-0 cursor-pointer shadow-sm"
+            >
+              {isVi ? 'Gửi nhắc nợ' : 'Send notice'}
+            </button>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span><strong>{data.availableRooms}</strong> {t('dash.available_rooms')}</span>
+
+          {/* Việc 2 */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-lg text-xs font-black bg-amber-100 text-amber-800">
+                  SẮP HẾT HẠN
+                </span>
+                <p className="text-base font-extrabold text-slate-900">
+                  Gia hạn hợp đồng phòng P.101 & P.201
+                </p>
+              </div>
+              <p className="text-sm text-slate-600 font-medium">
+                Hợp đồng sẽ hết hạn trong 17 và 25 ngày tới (Liên quan 16 triệu đ tiền thuê)
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => openAiWithTab('priority')}
+              className="py-2.5 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm flex-shrink-0 cursor-pointer"
+            >
+              {isVi ? 'Hỏi gia hạn' : 'Renew'}
+            </button>
+          </div>
+
+          {/* Việc 3 */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-lg text-xs font-black bg-blue-100 text-blue-800">
+                  SỬA CHỮA
+                </span>
+                <p className="text-base font-extrabold text-slate-900">
+                  Rò rỉ nước bồn rửa chén phòng 302 Thảo Điền
+                </p>
+              </div>
+              <p className="text-sm text-slate-600 font-medium">
+                Chưa phân công thợ sửa (Ước tính khoảng 450.000 đ)
+              </p>
+            </div>
+
+            <NavLink
+              to="/maintenance"
+              className="py-2.5 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm flex-shrink-0 text-center"
+            >
+              {isVi ? 'Giao cho thợ' : 'Assign'}
+            </NavLink>
           </div>
         </div>
       </div>
+
+      {/* ─── Modal Trợ Lý AI (Light Mode, To Bản) ─── */}
+      <AiIntelligenceHub
+        isOpen={showAiHub}
+        onClose={() => setShowAiHub(false)}
+        overview={data}
+        initialTab={aiHubTab}
+      />
+
     </div>
   );
 }

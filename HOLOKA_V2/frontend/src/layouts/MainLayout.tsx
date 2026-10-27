@@ -3,7 +3,8 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, Users, FileText, Settings, LayoutDashboard,
   Wrench, CheckSquare, Bell, CreditCard, LogOut, ChevronRight,
-  DoorOpen, Menu, X, Brain, BarChart3, Building, Plus, Sparkles, Activity
+  DoorOpen, Menu, X, Brain, BarChart3, Building, Sparkles, Activity,
+  HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -13,6 +14,8 @@ import { errorMessage } from '../services/api';
 import Logo from '../components/ui/Logo';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 import FloatingAiAssistant from '../components/ui/FloatingAiAssistant';
+import WelcomeAiGreeting from '../components/ui/WelcomeAiGreeting';
+import UserGuideModal from '../components/ui/UserGuideModal';
 
 interface NavItem {
   to: string;
@@ -98,9 +101,9 @@ const SidebarLink = ({ item, unread }: { item: NavItem; unread: number }) => {
       className={({ isActive }) => `sidebar-item${isActive ? ' active' : ''}`}
     >
       <div className="relative">
-        <item.icon size={18} className="transition-transform duration-200 group-hover:scale-110" />
+        <item.icon size={20} className="transition-transform duration-200 group-hover:scale-110" />
       </div>
-      <span className="flex-1 font-medium">{t(item.labelKey)}</span>
+      <span className="flex-1 font-semibold">{t(item.labelKey)}</span>
       {badgeCount ? (
         <span
           className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-white text-[10px] font-extrabold shadow-[0_0_8px_rgba(244,63,94,0.5)]"
@@ -122,6 +125,14 @@ export default function MainLayout() {
   const [unread, setUnread] = useState(0);
   const [logoutError, setLogoutError] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+
+  // Show AI welcome greeting once per session or right after login
+  const [showWelcome, setShowWelcome] = useState(() => {
+    const justLoggedIn = sessionStorage.getItem('holoka_just_logged_in') === 'true';
+    const seen = sessionStorage.getItem('holoka_welcome_seen');
+    return justLoggedIn || !seen;
+  });
 
   const wsId = user?.workspaces?.[0]?.id ?? 1;
 
@@ -147,6 +158,8 @@ export default function MainLayout() {
     setLoggingOut(true);
     setLogoutError('');
     try {
+      sessionStorage.removeItem('holoka_welcome_seen');
+      sessionStorage.removeItem('holoka_just_logged_in');
       await logoutSession();
       logout();
       navigate('/login');
@@ -249,7 +262,7 @@ export default function MainLayout() {
         ))}
       </nav>
 
-      {/* ─── AI Engine Pulse Status Badge ─── */}
+      {/* ─── Trợ lý ảo Pulse Status Badge ─── */}
       <div className="mx-3.5 mb-2 p-2.5 rounded-xl border border-indigo-500/20 bg-indigo-950/30 flex items-center gap-2.5">
         <div className="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center text-cyan-300">
           <Activity size={15} className="animate-pulse" />
@@ -272,8 +285,8 @@ export default function MainLayout() {
           to="/settings"
           className={({ isActive }) => `sidebar-item${isActive ? ' active' : ''}`}
         >
-          <Settings size={18} />
-          <span className="flex-1">{t('nav.settings')}</span>
+          <Settings size={20} />
+          <span className="flex-1 font-semibold">{t('nav.settings')}</span>
         </NavLink>
 
         {/* User Card */}
@@ -295,10 +308,10 @@ export default function MainLayout() {
           </div>
 
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-xs font-bold text-slate-200 truncate leading-snug">
+            <p className="text-sm font-bold text-slate-200 truncate leading-snug">
               {user?.fullName || t('layout.admin_role')}
             </p>
-            <p className="text-[10px] text-slate-400 truncate">
+            <p className="text-[11px] text-slate-400 truncate">
               {user?.email || 'admin@holoka.vn'}
             </p>
           </div>
@@ -375,17 +388,19 @@ export default function MainLayout() {
             {/* ─── Language Switcher Component ─── */}
             <LanguageSwitcher variant="pill" theme="light" />
 
-            {/* Quick Action Button */}
-            <NavLink
-              to="/properties"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white transition-all duration-200 cursor-pointer shadow-[0_2px_10px_rgba(99,102,241,0.35)] hover:shadow-[0_4px_16px_rgba(99,102,241,0.5)] hover:scale-[1.02] active:scale-[0.98]"
+            {/* User Guide Button */}
+            <button
+              type="button"
+              onClick={() => setShowGuideModal(true)}
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-sm font-bold text-white transition-all duration-200 cursor-pointer shadow-[0_2px_10px_rgba(37,99,235,0.4)] hover:shadow-[0_4px_16px_rgba(37,99,235,0.6)] hover:scale-[1.02] active:scale-[0.98]"
               style={{
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
               }}
+              title={t('layout.guide')}
             >
-              <Plus size={15} strokeWidth={2.5} />
-              <span>{t('layout.add_new')}</span>
-            </NavLink>
+              <HelpCircle size={17} strokeWidth={2.5} />
+              <span>{t('layout.guide_short')}</span>
+            </button>
 
             {/* Notification Bell with Ping */}
             <NavLink
@@ -414,13 +429,13 @@ export default function MainLayout() {
                 {initials}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-slate-800 leading-tight">
+                <p className="text-sm font-bold text-slate-800 leading-tight">
                   {user?.fullName || t('layout.admin_role')}
                 </p>
                 <div className="flex items-center gap-1 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                    {workspace?.role || 'OWNER'}
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                    {workspace?.role === 'OWNER' ? 'Chủ nhà' : workspace?.role || 'Chủ nhà'}
                   </span>
                 </div>
               </div>
@@ -443,6 +458,23 @@ export default function MainLayout() {
 
       {/* Floating Interactive AI Assistant */}
       <FloatingAiAssistant />
+
+      {/* User Guide Modal */}
+      <UserGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+      />
+
+      {/* AI Welcome Greeting (once per session or on login) */}
+      {showWelcome && (
+        <WelcomeAiGreeting
+          onDone={() => {
+            sessionStorage.setItem('holoka_welcome_seen', '1');
+            sessionStorage.removeItem('holoka_just_logged_in');
+            setShowWelcome(false);
+          }}
+        />
+      )}
     </div>
   );
 }
