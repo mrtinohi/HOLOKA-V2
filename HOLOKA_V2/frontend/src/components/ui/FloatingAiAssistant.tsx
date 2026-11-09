@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import {
-  Bot, Send, X, Sparkles, User, RotateCcw,
+  Bot, Send, X, User, RotateCcw,
   Minus, Maximize2, Activity
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -25,13 +25,11 @@ export const FloatingAiAssistant: React.FC = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showTooltip, setShowTooltip] = useState(true);
-  const [justArrived, setJustArrived] = useState(false);
 
   useEffect(() => {
     const handleAiArrived = () => {
-      setJustArrived(true);
       setShowTooltip(true);
-      setTimeout(() => setJustArrived(false), 3000);
+      setTimeout(() => setShowTooltip(false), 3000);
     };
     const handleOpenAi = () => {
       setIsOpen(true);
@@ -256,7 +254,7 @@ export const FloatingAiAssistant: React.FC = () => {
         <span key={i} className="block min-h-[1.2em]">
           {parts.map((part, j) =>
             j % 2 === 1 ? (
-              <strong key={j} className="font-extrabold text-indigo-900">
+              <strong key={j} className="font-bold text-indigo-600 dark:text-indigo-300">
                 {part}
               </strong>
             ) : (
@@ -269,27 +267,18 @@ export const FloatingAiAssistant: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50 select-none font-sans">
+    <div className="fixed bottom-6 right-6 z-50 select-none font-sans">
       {/* ─── 1. Collapsed Floating AI Button ─── */}
       {!isOpen && (
-        <div className="relative flex items-center gap-3">
-          {/* Floating Tooltip Hint */}
+        <div className="relative flex items-center gap-2.5">
+          {/* Subtle Tooltip Hint */}
           {showTooltip && (
             <div
               onClick={() => setIsOpen(true)}
-              className={`hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold shadow-xl backdrop-blur-md cursor-pointer transition-all duration-300 animate-float ${
-                justArrived
-                  ? 'bg-indigo-950/95 text-cyan-200 border-2 border-cyan-400/80 shadow-[0_0_20px_rgba(34,211,238,0.5)] scale-105'
-                  : 'bg-slate-900/90 text-white border border-white/10 hover:bg-slate-900'
-              }`}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-bold shadow-lg cursor-pointer transition-all bg-slate-900 text-white px-3.5 py-2 text-slate-200 border border-slate-800 hover:bg-slate-900"
             >
-              <Sparkles size={13} className={justArrived ? 'text-cyan-300 animate-spin' : 'text-cyan-400'} />
-              <span>
-                {justArrived
-                  ? (isVi ? 'Tôi ở đây nè! Bấm vào tôi khi cần nhé ✨' : 'I am docked here! Click anytime ✨')
-                  : (isVi ? 'Trợ lý HOLOKA AI' : 'HOLOKA AI Assistant')}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping ml-1" />
+              <span>{isVi ? 'Trợ lý HOLOKA' : 'HOLOKA Assistant'}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             </div>
           )}
 
@@ -302,34 +291,14 @@ export const FloatingAiAssistant: React.FC = () => {
               setIsMinimized(false);
               setShowTooltip(false);
             }}
-            className={`relative w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-[0_8px_30px_rgba(99,102,241,0.5)] hover:shadow-[0_12px_40px_rgba(99,102,241,0.7)] transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer group ${
-              justArrived ? 'scale-110 ring-4 ring-cyan-400 ring-offset-2 ring-offset-slate-900' : ''
-            }`}
-            style={{
-              background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #06b6d4 100%)',
-            }}
-            title={isVi ? 'Mở Trợ lý ảo HOLOKA AI' : 'Open HOLOKA AI Assistant'}
+            className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/35 hover:scale-105 hover:bg-blue-700 active:scale-95 shadow-md shadow-blue-600/30 transition-all duration-150 cursor-pointer"
+            title={isVi ? 'Mở Trợ lý HOLOKA' : 'Open HOLOKA Assistant'}
           >
-            {/* Arrival Expanding Wave */}
-            {justArrived && (
-              <div className="absolute inset-[-14px] rounded-3xl border-2 border-cyan-400 animate-ping pointer-events-none" />
-            )}
+            <Bot size={22} className="text-white" />
 
-            {/* Glowing Ambient Background Ring */}
-            <div className="absolute inset-[-4px] rounded-2xl bg-indigo-500 opacity-40 blur-md group-hover:opacity-75 transition-opacity" />
-
-            {/* Rotating Tech Dashed Ring */}
-            <div
-              className="absolute inset-[-3px] rounded-2xl border border-cyan-300/30 border-dashed pointer-events-none"
-              style={{ animation: 'spin-slow 16s linear infinite' }}
-            />
-
-            <Bot size={26} className="relative z-10 text-white group-hover:rotate-12 transition-transform" />
-
-            {/* Live Status Beacon */}
-            <span className="absolute top-1 right-1 flex h-3 w-3 z-20">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400 border-2 border-slate-900" />
+            {/* Live Status Dot */}
+            <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 border-2 border-blue-600" />
             </span>
           </button>
         </div>
@@ -338,40 +307,32 @@ export const FloatingAiAssistant: React.FC = () => {
       {/* ─── 2. Expanded Floating AI Chat Window ─── */}
       {isOpen && (
         <div
-          className={`flex flex-col bg-white rounded-3xl shadow-[0_20px_60px_rgba(15,23,42,0.25)] border border-slate-200/80 overflow-hidden transition-all duration-300 fade-in ${
+          className={`flex flex-col bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-200 fade-in ${
             isMinimized
               ? 'w-72 h-14'
-              : 'w-[360px] sm:w-[410px] h-[580px] max-h-[85vh]'
+              : 'w-[360px] sm:w-[400px] h-[540px] max-h-[82vh]'
           }`}
-          style={{ backdropFilter: 'blur(20px)' }}
         >
           {/* Header Bar */}
           <div
-            className="flex items-center justify-between px-4 py-3 cursor-pointer select-none text-white relative overflow-hidden flex-shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, #090d16 0%, #111827 50%, #1e1b4b 100%)',
-            }}
+            className="flex items-center justify-between px-4 py-3 cursor-pointer select-none relative overflow-hidden flex-shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white transition-colors"
             onClick={() => isMinimized && setIsMinimized(false)}
           >
-            {/* Ambient corner light */}
-            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-indigo-500/30 blur-xl pointer-events-none" />
-
             <div className="flex items-center gap-2.5 z-10">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-white shadow-sm flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs flex-shrink-0">
                 <Bot size={17} />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-extrabold text-sm text-white tracking-wide">
-                    HOLOKA AI
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white tracking-wide">
+                    {isVi ? 'Trợ lý HOLOKA' : 'HOLOKA Assistant'}
                   </h3>
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
-                    LIVE
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30">
+                    ONLINE
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-slate-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isVi ? 'Trực tuyến • Bất động sản' : 'Online • Real-time Data'}</span>
+                <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                  <span>{isVi ? 'Hỗ trợ tra cứu vận hành' : 'Operations Intelligence'}</span>
                 </div>
               </div>
             </div>
@@ -386,11 +347,10 @@ export const FloatingAiAssistant: React.FC = () => {
                       e.stopPropagation();
                       window.dispatchEvent(new CustomEvent('open-ai-hub'));
                     }}
-                    title={isVi ? 'Mở Trung Tâm Phân Tích AI (What-If & Thất thoát)' : 'Open AI Intelligence Hub'}
-                    className="px-2 py-1 rounded-lg hover:bg-white/10 text-cyan-300 hover:text-white transition-colors cursor-pointer mr-1 flex items-center gap-1 text-[11px] font-bold bg-white/5 border border-cyan-400/30"
+                    title={isVi ? 'Mở Bảng phân tích' : 'Open Intelligence Hub'}
+                    className="px-2 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-white/10 text-blue-700 dark:text-slate-200 transition-colors cursor-pointer mr-1 flex items-center gap-1 text-[11px] font-semibold bg-blue-50 dark:bg-white/5 border border-blue-200/80 dark:border-white/10"
                   >
-                    <Sparkles size={12} className="text-cyan-400" />
-                    <span className="hidden sm:inline">{isVi ? 'Phân tích AI' : 'AI Hub'}</span>
+                    <span>{isVi ? 'Phân tích' : 'Insights'}</span>
                   </button>
 
                   <button
@@ -400,7 +360,7 @@ export const FloatingAiAssistant: React.FC = () => {
                       handleReset();
                     }}
                     title={isVi ? 'Làm mới cuộc trò chuyện' : 'Reset chat'}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     <RotateCcw size={15} />
                   </button>
@@ -414,7 +374,7 @@ export const FloatingAiAssistant: React.FC = () => {
                   setIsMinimized(!isMinimized);
                 }}
                 title={isMinimized ? 'Mở rộng' : 'Thu nhỏ'}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
                 {isMinimized ? <Maximize2 size={15} /> : <Minus size={15} />}
               </button>
@@ -426,7 +386,7 @@ export const FloatingAiAssistant: React.FC = () => {
                   setIsOpen(false);
                 }}
                 title={isVi ? 'Đóng' : 'Close'}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -435,7 +395,7 @@ export const FloatingAiAssistant: React.FC = () => {
 
           {/* Body and Chat Area (Hidden if minimized) */}
           {!isMinimized && (
-            <div className="flex-1 flex flex-col min-h-0 bg-slate-50/60">
+            <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/70 transition-colors">
               {/* Messages Container */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
                 {messages.map(msg => {
@@ -451,8 +411,8 @@ export const FloatingAiAssistant: React.FC = () => {
                       <div
                         className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-xs ${
                           isUser
-                            ? 'bg-gradient-to-br from-indigo-600 to-violet-600'
-                            : 'bg-gradient-to-br from-slate-900 to-slate-800'
+                            ? 'bg-blue-600'
+                            : 'bg-blue-600'
                         }`}
                       >
                         {isUser ? <User size={13} /> : <Bot size={13} />}
@@ -460,16 +420,16 @@ export const FloatingAiAssistant: React.FC = () => {
 
                       {/* Bubble */}
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs sm:text-[13px] leading-relaxed shadow-xs ${
+                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm sm:text-[15px] leading-relaxed shadow-xs ${
                           isUser
-                            ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none'
-                            : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-none'
+                            ? 'bg-blue-600 text-white rounded-tr-none font-normal'
+                            : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-tl-none'
                         }`}
                       >
                         {renderFormattedText(msg.content)}
                         <p
-                          className={`text-[10px] mt-1.5 font-medium ${
-                            isUser ? 'text-indigo-200' : 'text-slate-400'
+                          className={`text-[10px] mt-1 font-medium ${
+                            isUser ? 'text-blue-200' : 'text-slate-400 dark:text-slate-500'
                           }`}
                         >
                           {msg.time}
@@ -481,9 +441,9 @@ export const FloatingAiAssistant: React.FC = () => {
 
                 {/* Typing status */}
                 {isTyping && (
-                  <div className="flex items-center gap-2 text-slate-400 text-xs pl-9">
-                    <Activity size={12} className="animate-spin text-indigo-500" />
-                    <span>{isVi ? 'HOLOKA AI đang tính toán...' : 'Analyzing metrics...'}</span>
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs pl-9">
+                    <Activity size={12} className="animate-spin text-blue-500" />
+                    <span>{isVi ? 'Đang tra cứu dữ liệu...' : 'Querying data...'}</span>
                   </div>
                 )}
 
@@ -491,13 +451,13 @@ export const FloatingAiAssistant: React.FC = () => {
               </div>
 
               {/* Quick Prompts Carousel */}
-              <div className="px-3 py-2 bg-white/80 border-t border-slate-200/60 flex gap-1.5 overflow-x-auto no-scrollbar">
+              <div className="px-3 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar">
                 {SUGGESTED_PROMPTS.map((prompt, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSend(prompt)}
-                    className="flex-shrink-0 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 border border-slate-200/60 transition-all duration-150 cursor-pointer text-left"
+                    className="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-slate-800/90 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-700 dark:hover:text-blue-300 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer text-left shadow-2xs"
                   >
                     {prompt}
                   </button>
@@ -510,7 +470,7 @@ export const FloatingAiAssistant: React.FC = () => {
                   e.preventDefault();
                   handleSend();
                 }}
-                className="p-3 bg-white border-t border-slate-200 flex items-center gap-2"
+                className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2"
               >
                 <input
                   type="text"
@@ -519,13 +479,13 @@ export const FloatingAiAssistant: React.FC = () => {
                   placeholder={
                     isVi ? 'Hỏi về phòng trống, hợp đồng, tài chính...' : 'Ask about rooms, contracts, revenue...'
                   }
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-100 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 border border-transparent focus:border-indigo-500 transition-all"
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-blue-500/20 border border-slate-200 dark:border-slate-700 transition-all"
                 />
 
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="w-10 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all duration-200 cursor-pointer shadow-sm hover:scale-105 active:scale-95 flex-shrink-0"
+                  className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all cursor-pointer shadow-xs flex-shrink-0"
                 >
                   <Send size={15} />
                 </button>
@@ -539,3 +499,5 @@ export const FloatingAiAssistant: React.FC = () => {
 };
 
 export default FloatingAiAssistant;
+
+

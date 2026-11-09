@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -52,8 +53,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex w-full font-sans bg-[#090d16] text-slate-100 overflow-hidden relative">
-      {/* ─── Top-Right Floating Language Switcher ─── */}
-      <div className="absolute top-6 right-6 z-50">
+      {/* ─── Top-Right Floating Controls ─── */}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
+        <ThemeToggle variant="icon" themeContext="dark" />
         <LanguageSwitcher variant="pill" theme="dark" />
       </div>
 
@@ -61,15 +63,15 @@ export default function LoginPage() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute -top-[25%] -left-[10%] w-[650px] h-[650px] rounded-full opacity-30 filter blur-[120px]"
-          style={{ background: 'radial-gradient(circle, #6366f1 0%, #4338ca 60%, transparent 80%)' }}
+          style={{ background: 'radial-gradient(circle, #2563eb 0%, #1e3a8a 60%, transparent 80%)' }}
         />
         <div
           className="absolute -bottom-[20%] -right-[10%] w-[750px] h-[750px] rounded-full opacity-25 filter blur-[140px]"
-          style={{ background: 'radial-gradient(circle, #06b6d4 0%, #8b5cf6 60%, transparent 80%)' }}
+          style={{ background: 'radial-gradient(circle, #38bdf8 0%, #0284c7 60%, transparent 80%)' }}
         />
         <div
           className="absolute top-[40%] left-[35%] w-[500px] h-[500px] rounded-full opacity-15 filter blur-[100px]"
-          style={{ background: 'radial-gradient(circle, #a855f7 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, #0ea5e9 0%, transparent 70%)' }}
         />
 
         {/* Subtle Architectural Grid Lines - reduced opacity */}
@@ -88,19 +90,19 @@ export default function LoginPage() {
       <div className="hidden lg:flex flex-col justify-between w-7/12 p-14 relative z-10 border-r border-white/5">
         {/* Brand Header */}
         <div>
-          <Logo size="lg" variant="horizontal" animate={true} />
+          <Logo size="xl" variant="horizontal" animate={true} />
         </div>
 
         {/* Core Value Proposition & Live Cards */}
         <div className="max-w-xl my-auto py-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-xs font-bold mb-6 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold mb-6 tracking-wide">
             <Sparkles size={14} className="text-cyan-400" />
             {t('login.hero_badge')}
           </div>
 
           <h2 className="text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-5 font-display">
             {t('login.hero_title_1')}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-cyan-300 to-violet-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-cyan-300 to-blue-300">
               {t('login.hero_title_2')}
             </span>
           </h2>
@@ -230,7 +232,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-sm font-bold text-slate-200 mb-2"
+                  className="block text-base font-bold text-slate-200 mb-2"
                 >
                   {t('login.email_label')}
                 </label>
@@ -246,7 +248,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="admin@holoka.vn"
-                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 transition-all duration-200"
+                    className="w-full pl-11 pr-4 py-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base font-medium focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/25 transition-all duration-200 min-h-[52px]"
                   />
                 </div>
               </div>
@@ -273,7 +275,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 transition-all duration-200"
+                    className="w-full pl-11 pr-12 py-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base font-medium focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/25 transition-all duration-200 min-h-[52px]"
                   />
                   <button
                     type="button"
@@ -290,7 +292,7 @@ export default function LoginPage() {
                 id="login-submit"
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-3 py-4 px-4 rounded-xl font-bold text-white text-base flex items-center justify-center gap-2.5 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(37,99,235,0.5)] hover:shadow-[0_6px_28px_rgba(37,99,235,0.7)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-3 py-4 px-4 rounded-xl font-bold text-white text-base flex items-center justify-center gap-2.5 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_28px_rgba(37,99,235,0.6)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)',
                 }}
@@ -320,3 +322,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
+
+

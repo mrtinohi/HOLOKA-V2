@@ -1,3 +1,4 @@
+﻿import React from 'react';
 import type { Priority, ContractStatus, InvoiceStatus, MaintenanceStatus, TaskStatus, RecordStatus, AlertCategory } from '../../types';
 
 interface BadgeProps {
@@ -5,21 +6,20 @@ interface BadgeProps {
   variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'purple';
 }
 
-const variantStyles: Record<string, { color: string; bg: string; border: string }> = {
-  success: { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
-  warning: { color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-  danger:  { color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-  info:    { color: '#0284c7', bg: '#f0f9ff', border: '#7dd3fc' },
-  neutral: { color: '#475569', bg: '#f8fafc', border: '#cbd5e1' },
-  purple:  { color: '#7c3aed', bg: '#faf5ff', border: '#c4b5fd' },
+const variantClasses: Record<string, string> = {
+  success: 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-800/60',
+  warning: 'text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950/60 dark:border-amber-800/60',
+  danger:  'text-rose-700 bg-rose-50 border-rose-200 dark:text-rose-300 dark:bg-rose-950/60 dark:border-rose-800/60',
+  info:    'text-sky-700 bg-sky-50 border-sky-200 dark:text-sky-300 dark:bg-sky-950/60 dark:border-sky-800/60',
+  neutral: 'text-slate-700 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700',
+  purple:  'text-purple-700 bg-purple-50 border-purple-200 dark:text-purple-300 dark:bg-purple-950/60 dark:border-purple-800/60',
 };
 
 export function Badge({ children, variant = 'neutral' }: BadgeProps) {
-  const s = variantStyles[variant];
+  const cls = variantClasses[variant] || variantClasses.neutral;
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
-      style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border-2 ${cls}`}
     >
       {children}
     </span>
@@ -100,3 +100,4 @@ export function AlertCategoryBadge({ category }: { category: AlertCategory }) {
   const { label, variant } = map[category] ?? { label: category, variant: 'neutral' };
   return <Badge variant={variant}>{label}</Badge>;
 }
+

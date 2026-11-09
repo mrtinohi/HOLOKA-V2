@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, Users, FileText, Settings, LayoutDashboard,
   Wrench, CheckSquare, Bell, CreditCard, LogOut, ChevronRight,
-  DoorOpen, Menu, X, Brain, BarChart3, Building, Sparkles, Activity,
-  HelpCircle
+  DoorOpen, Menu, X, Brain, BarChart3, Building,
+  HelpCircle, Calendar
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -13,6 +13,7 @@ import { logout as logoutSession } from '../services/authService';
 import { errorMessage } from '../services/api';
 import Logo from '../components/ui/Logo';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import FloatingAiAssistant from '../components/ui/FloatingAiAssistant';
 import WelcomeAiGreeting from '../components/ui/WelcomeAiGreeting';
 import UserGuideModal from '../components/ui/UserGuideModal';
@@ -35,21 +36,16 @@ const NAV_GROUPS: { titleKey: string; items: NavItem[] }[] = [
     titleKey: 'nav.group_assets',
     items: [
       { to: '/properties', icon: Building2,  labelKey: 'nav.properties' },
-      { to: '/buildings',  icon: Building,   labelKey: 'nav.buildings' },
       { to: '/rooms',      icon: DoorOpen,   labelKey: 'nav.rooms' },
-    ],
-  },
-  {
-    titleKey: 'nav.group_leases',
-    items: [
-      { to: '/tenants',   icon: Users,    labelKey: 'nav.tenants' },
-      { to: '/contracts', icon: FileText, labelKey: 'nav.contracts' },
+      { to: '/tenants',   icon: Users,      labelKey: 'nav.tenants' },
+      { to: '/contracts', icon: FileText,   labelKey: 'nav.contracts' },
     ],
   },
   {
     titleKey: 'nav.group_finance',
     items: [
       { to: '/finance', icon: CreditCard, labelKey: 'nav.finance' },
+      { to: '/reports', icon: BarChart3,  labelKey: 'nav.reports' },
     ],
   },
   {
@@ -58,18 +54,6 @@ const NAV_GROUPS: { titleKey: string; items: NavItem[] }[] = [
       { to: '/maintenance',   icon: Wrench,      labelKey: 'nav.maintenance' },
       { to: '/tasks',         icon: CheckSquare, labelKey: 'nav.tasks' },
       { to: '/notifications', icon: Bell,        labelKey: 'nav.notifications' },
-    ],
-  },
-  {
-    titleKey: 'nav.group_intelligence',
-    items: [
-      { to: '/intelligence', icon: Brain, labelKey: 'nav.intelligence' },
-    ],
-  },
-  {
-    titleKey: 'nav.group_reports',
-    items: [
-      { to: '/reports', icon: BarChart3, labelKey: 'nav.reports' },
     ],
   },
 ];
@@ -101,9 +85,9 @@ const SidebarLink = ({ item, unread }: { item: NavItem; unread: number }) => {
       className={({ isActive }) => `sidebar-item${isActive ? ' active' : ''}`}
     >
       <div className="relative">
-        <item.icon size={20} className="transition-transform duration-200 group-hover:scale-110" />
+        <item.icon size={22} className="transition-transform duration-200 group-hover:scale-110 flex-shrink-0" />
       </div>
-      <span className="flex-1 font-semibold">{t(item.labelKey)}</span>
+      <span className="flex-1 sidebar-label">{t(item.labelKey)}</span>
       {badgeCount ? (
         <span
           className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-white text-[10px] font-extrabold shadow-[0_0_8px_rgba(244,63,94,0.5)]"
@@ -118,7 +102,8 @@ const SidebarLink = ({ item, unread }: { item: NavItem; unread: number }) => {
 
 export default function MainLayout() {
   const { user, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isVi = language === 'vi';
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -126,6 +111,17 @@ export default function MainLayout() {
   const [logoutError, setLogoutError] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [largeFont, setLargeFont] = useState(() => localStorage.getItem('holoka_large_font') === 'true');
+
+  useEffect(() => {
+    if (largeFont) {
+      document.documentElement.classList.add('age-friendly-large');
+      localStorage.setItem('holoka_large_font', 'true');
+    } else {
+      document.documentElement.classList.remove('age-friendly-large');
+      localStorage.setItem('holoka_large_font', 'false');
+    }
+  }, [largeFont]);
 
   // Show AI welcome greeting once per session or right after login
   const [showWelcome, setShowWelcome] = useState(() => {
@@ -133,6 +129,12 @@ export default function MainLayout() {
     const seen = sessionStorage.getItem('holoka_welcome_seen');
     return justLoggedIn || !seen;
   });
+
+  useEffect(() => {
+    const handleOpen = () => setShowWelcome(true);
+    window.addEventListener('open-welcome-greeting', handleOpen);
+    return () => window.removeEventListener('open-welcome-greeting', handleOpen);
+  }, []);
 
   const wsId = user?.workspaces?.[0]?.id ?? 1;
 
@@ -184,72 +186,42 @@ export default function MainLayout() {
   const workspace = user?.workspaces?.[0];
 
   const sidebar = (
-    <aside
-      className="flex flex-col h-full relative z-20 select-none"
-      style={{
-        background: 'linear-gradient(180deg, #090d16 0%, #0d121f 50%, #080c14 100%)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.25)',
-      }}
-    >
+    <aside className="flex flex-col h-full relative z-20 select-none bg-white dark:bg-[#090d16] border-r border-slate-200 dark:border-white/10 shadow-xs dark:shadow-[4px_0_24px_rgba(0,0,0,0.25)] transition-colors duration-200">
       {/* ─── Top Brand Header ─── */}
       <div className="px-5 pt-6 pb-4">
-        <NavLink to="/dashboard" className="block focus:outline-none">
-          <Logo size="md" variant="horizontal" animate={true} />
+        <NavLink to="/dashboard" className="block focus:outline-none mascot-logo" title="Về trang chủ HOLOKA">
+          <Logo size="lg" variant="horizontal" animate={true} />
         </NavLink>
 
         {/* Workspace Chip */}
         {workspace && (
-          <div
-            className="mt-4 flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all duration-300"
-            style={{
-              background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%)',
-              borderColor: 'rgba(99, 102, 241, 0.25)',
-              boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.15)',
-            }}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-              </span>
+          <div className="mt-4 flex items-center justify-between px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 transition-all">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
               <div className="truncate text-left">
-                <p className="text-xs font-bold text-slate-200 truncate leading-tight tracking-wide">
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate leading-tight tracking-wide">
                   {workspace.name}
                 </p>
-                <p className="text-[10px] text-slate-400 tracking-wider">{t('layout.workspace')}</p>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-wider">{t('layout.workspace')}</p>
               </div>
             </div>
 
-            <span
-              className="text-[10px] font-black px-2 py-0.5 rounded-md flex-shrink-0 tracking-wider uppercase"
-              style={{
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.35))',
-                color: '#a5b4fc',
-                border: '1px solid rgba(165,180,252,0.25)',
-              }}
-            >
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg flex-shrink-0 tracking-wider uppercase bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50">
               {workspace.role}
             </span>
           </div>
         )}
       </div>
 
-      {/* Decorative Gradient Line */}
-      <div
-        className="mx-4 mb-3 h-[1px]"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), rgba(6, 182, 212, 0.4), transparent)',
-        }}
-      />
+      {/* Subtle Divider Line */}
+      <div className="mx-4 mb-3 h-[1px] bg-slate-200 dark:bg-slate-800/80" />
 
       {/* ─── Scrollable Nav Categories ─── */}
-      <nav className="flex-1 overflow-y-auto px-3.5 space-y-4 pb-4">
+      <nav className="flex-1 overflow-y-auto px-3 space-y-5 pb-4">
         {navGroups.map(group => (
           <div key={group.titleKey}>
             <p
-              className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400"
-              style={{ letterSpacing: '0.12em' }}
+              className="sidebar-group-title text-slate-500 dark:text-slate-400"
             >
               {t(group.titleKey)}
             </p>
@@ -262,22 +234,30 @@ export default function MainLayout() {
         ))}
       </nav>
 
-      {/* ─── Trợ lý ảo Pulse Status Badge ─── */}
-      <div className="mx-3.5 mb-2 p-2.5 rounded-xl border border-indigo-500/20 bg-indigo-950/30 flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-indigo-500/20 flex items-center justify-center text-cyan-300">
-          <Activity size={15} className="animate-pulse" />
+      {/* ─── Bản tin hôm nay ─── */}
+      <div
+        onClick={() => setShowWelcome(true)}
+        className="mx-3.5 mb-2 p-2.5 rounded-xl border border-blue-100 dark:border-slate-800 bg-blue-50/50 dark:bg-slate-900/60 hover:bg-blue-50 dark:hover:bg-slate-800/80 transition-all flex items-center gap-2.5 cursor-pointer group"
+        title="Bấm để xem Bản tin vận hành hàng ngày"
+      >
+        <div className="w-7 h-7 rounded-lg bg-blue-600/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <Calendar size={14} />
         </div>
         <div className="flex-1 min-w-0 text-left">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-bold text-indigo-200">{t('layout.ai_core')}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-white transition-colors">
+              {isVi ? 'Bản tin hôm nay' : 'Daily Briefing'}
+            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           </div>
-          <p className="text-[10px] text-slate-400 truncate">{t('layout.ai_status')}</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+            {isVi ? 'Xem số liệu & việc cần làm' : 'View daily metrics & tasks'}
+          </p>
         </div>
       </div>
 
       {/* Divider */}
-      <div className="mx-4 my-1 h-[1px] bg-slate-800/60" />
+      <div className="mx-4 my-1 h-[1px] bg-slate-200 dark:bg-slate-800/60" />
 
       {/* ─── Bottom Profile & Settings ─── */}
       <div className="p-3 space-y-1.5">
@@ -290,28 +270,22 @@ export default function MainLayout() {
         </NavLink>
 
         {/* User Card */}
-        <div
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-300 group"
-          style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-          }}
-        >
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 transition-all duration-200 group">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-md flex-shrink-0"
             style={{
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)',
+              background: 'linear-gradient(135deg, #2563eb, #38bdf8)',
+              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.4)',
             }}
           >
             {initials}
           </div>
 
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-bold text-slate-200 truncate leading-snug">
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate leading-snug">
               {user?.fullName || t('layout.admin_role')}
             </p>
-            <p className="text-[11px] text-slate-400 truncate">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
               {user?.email || 'admin@holoka.vn'}
             </p>
           </div>
@@ -320,7 +294,7 @@ export default function MainLayout() {
             disabled={loggingOut}
             onClick={handleLogout}
             title={t('layout.logout')}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+            className="p-2.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer"
           >
             <LogOut size={16} />
           </button>
@@ -330,9 +304,9 @@ export default function MainLayout() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans">
+    <div className="flex h-screen overflow-hidden bg-[var(--color-bg)] font-sans transition-colors duration-200">
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-col w-64 flex-shrink-0">
+      <div className="hidden md:flex flex-col w-72 flex-shrink-0">
         {sidebar}
       </div>
 
@@ -353,88 +327,102 @@ export default function MainLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Modern Glassmorphic Top Navbar */}
         <header
-          className="flex-shrink-0 flex items-center justify-between h-16 px-6 relative z-10"
+          className="flex-shrink-0 flex items-center justify-between h-[72px] px-6 relative z-10 transition-colors duration-200"
           style={{
-            background: 'rgba(255, 255, 255, 0.82)',
+            background: 'var(--color-navbar-bg)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            borderBottom: '1px solid rgba(226, 232, 240, 0.85)',
+            borderBottom: '1px solid var(--color-navbar-border)',
             boxShadow: '0 1px 12px rgba(15, 23, 42, 0.04)',
           }}
         >
           <div className="flex items-center gap-4">
             {/* Mobile menu trigger */}
             <button
-              className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+              className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
-            {/* Breadcrumb Navigation with Modern Badge */}
+            {/* Clean Breadcrumb Navigation */}
             <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100">
-                <Sparkles size={12} className="text-indigo-500" />
-                HOLOKA V2
+              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 hidden sm:inline">
+                HOLOKA
               </span>
-              <ChevronRight size={14} className="text-slate-300 hidden sm:inline" />
-              <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+              <ChevronRight size={14} className="text-slate-300 dark:text-slate-600 hidden sm:inline" />
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                 {pageTitle}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* ─── Language Switcher Component ─── */}
-            <LanguageSwitcher variant="pill" theme="light" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* ─── Theme Toggle Switcher ─── */}
+            <ThemeToggle variant="icon" />
 
-            {/* User Guide Button */}
+            {/* ─── Language Switcher Component ─── */}
+            <LanguageSwitcher variant="pill" theme="auto" />
+
+            {/* ─── Nút Đổi Cỡ Chữ Dễ Đọc (Đặc Biệt Cho Người Trung Tuổi) ─── */}
+            <button
+              type="button"
+              onClick={() => setLargeFont(!largeFont)}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer ${
+                largeFont
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:border-blue-400'
+              }`}
+              title="Bật/Tắt cỡ chữ to dễ nhìn"
+            >
+              <span className="font-black text-sm">A+</span>
+              <span className="hidden md:inline">{largeFont ? 'Chữ To' : 'Cỡ Chữ'}</span>
+            </button>
+
+            {/* User Guide Button - Clean & Professional */}
             <button
               type="button"
               onClick={() => setShowGuideModal(true)}
-              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-sm font-bold text-white transition-all duration-200 cursor-pointer shadow-[0_2px_10px_rgba(37,99,235,0.4)] hover:shadow-[0_4px_16px_rgba(37,99,235,0.6)] hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)',
-              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 transition-colors cursor-pointer min-h-[44px]"
               title={t('layout.guide')}
             >
-              <HelpCircle size={17} strokeWidth={2.5} />
-              <span>{t('layout.guide_short')}</span>
+              <HelpCircle size={18} />
+              <span className="hidden sm:inline">{t('layout.guide_short')}</span>
             </button>
 
             {/* Notification Bell with Ping */}
             <NavLink
               to="/notifications"
-              className="relative p-2.5 rounded-xl text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/60 transition-all duration-200 cursor-pointer"
+              className="relative p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/60 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer"
               title={t('layout.notifications')}
             >
               <Bell size={19} />
               {unread > 0 ? (
                 <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 border-2 border-white" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 border-2 border-white dark:border-slate-900" />
                 </span>
               ) : null}
             </NavLink>
 
             {/* Vertical Divider */}
-            <div className="w-px h-6 bg-slate-200 mx-1" />
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1" />
 
             {/* User Profile Pill */}
             <div className="flex items-center gap-2.5 pl-1">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black shadow-sm ring-2 ring-indigo-500/20"
-                style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-black shadow-sm ring-2 ring-blue-500/20"
+                style={{ background: 'linear-gradient(135deg, #1d4ed8, #2563eb)' }}
               >
                 {initials}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-bold text-slate-800 leading-tight">
+                <p className="text-base font-bold text-slate-800 dark:text-slate-200 leading-tight">
                   {user?.fullName || t('layout.admin_role')}
                 </p>
                 <div className="flex items-center gap-1 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                     {workspace?.role === 'OWNER' ? 'Chủ nhà' : workspace?.role || 'Chủ nhà'}
                   </span>
                 </div>
@@ -478,3 +466,8 @@ export default function MainLayout() {
     </div>
   );
 }
+
+
+
+
+

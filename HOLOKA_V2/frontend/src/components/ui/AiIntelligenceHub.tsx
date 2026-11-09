@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import {
   Sparkles, TrendingUp,
   ArrowRight, Sliders, ShieldAlert,
@@ -678,3 +678,5 @@ export default function AiIntelligenceHub({
     </div>
   );
 }
+
+

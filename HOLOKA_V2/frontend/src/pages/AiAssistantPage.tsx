@@ -161,7 +161,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         style={{
           background: isUser
             ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
-            : 'linear-gradient(135deg,#0f172a,#1e293b)',
+            : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
         }}
       >
         {isUser ? <User size={15} color="white" /> : <Bot size={15} color="white" />}
@@ -172,7 +172,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         className="max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
         style={isUser
           ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', borderBottomRightRadius: 4 }
-          : { background: '#fff', color: '#374151', border: '1px solid #f1f5f9', borderBottomLeftRadius: 4, boxShadow: '0 1px 8px rgba(0,0,0,0.04)' }
+          : { background: 'var(--color-surface, #ffffff)', color: 'var(--color-text-primary, #1e293b)', border: '1px solid var(--color-border, #e2e8f0)', borderBottomLeftRadius: 4, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
         }
       >
         {parseContent(msg.content)}
@@ -244,13 +244,13 @@ Hãy hỏi tôi bất cứ điều gì về tình hình phòng, hợp đồng, t
       <div className="fade-in flex items-center gap-4 mb-4 flex-shrink-0">
         <div
           className="w-12 h-12 rounded-2xl flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)' }}
+          style={{ background: 'linear-gradient(135deg,#4f46e5,#6366f1)' }}
         >
           <Bot size={22} color="white" />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>HOLOKA AI</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">HOLOKA AI</h1>
             <span
               className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
               style={{ background: 'rgba(16,185,129,0.1)', color: '#059669', border: '1px solid rgba(16,185,129,0.2)' }}
@@ -276,7 +276,7 @@ Hãy hỏi tôi bất cứ điều gì về tình hình phòng, hợp đồng, t
 
         {thinking && (
           <div className="flex gap-3 fade-in">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0f172a,#1e293b)' }}>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg,#4f46e5,#6366f1)' }}>
               <Bot size={15} color="white" />
             </div>
             <div className="px-4 py-3 rounded-2xl rounded-bl-sm" style={{ background: '#fff', border: '1px solid #f1f5f9' }}>

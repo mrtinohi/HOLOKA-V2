@@ -53,6 +53,16 @@ const translations: Record<Language, Record<string, string>> = {
     'layout.ai_status': 'Sẵn sàng hỗ trợ 24/7',
     'layout.admin_role': 'Chủ nhà / Quản lý',
 
+    // Theme
+    'theme.mode': 'Chế độ giao diện',
+    'theme.light': 'Chế độ Sáng',
+    'theme.dark': 'Chế độ Tối',
+    'theme.system': 'Theo hệ thống',
+    'theme.light_short': 'Sáng',
+    'theme.dark_short': 'Tối',
+    'theme.switch_to_light': 'Chuyển sang giao diện Sáng',
+    'theme.switch_to_dark': 'Chuyển sang giao diện Tối',
+
     // Login Page
     'login.title': 'Đăng nhập hệ thống',
     'login.desc': 'Nhập email và mật khẩu để vào trang quản lý.',
@@ -156,6 +166,16 @@ const translations: Record<Language, Record<string, string>> = {
     'layout.ai_core': 'AI Assistant',
     'layout.ai_status': 'Ready to assist 24/7',
     'layout.admin_role': 'Owner / Manager',
+
+    // Theme
+    'theme.mode': 'Color Theme',
+    'theme.light': 'Light Mode',
+    'theme.dark': 'Dark Mode',
+    'theme.system': 'System Default',
+    'theme.light_short': 'Light',
+    'theme.dark_short': 'Dark',
+    'theme.switch_to_light': 'Switch to Light Mode',
+    'theme.switch_to_dark': 'Switch to Dark Mode',
 
     // Login Page
     'login.title': 'Admin Sign In',

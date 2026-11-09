@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -15,207 +15,220 @@ export const Logo: React.FC<LogoProps> = ({
   className = '',
   animate = true,
 }) => {
-  // Dimensions based on size
-  const iconSizes = {
-    sm: 32,
-    md: 40,
-    lg: 52,
-    xl: 68,
-  };
-
+  const iconSizes = { sm: 38, md: 48, lg: 60, xl: 76 };
   const textSizes = {
-    sm: { title: 'text-base font-bold tracking-wider', sub: 'text-[9px] tracking-widest' },
-    md: { title: 'text-lg font-extrabold tracking-widest', sub: 'text-[10px] tracking-wider' },
-    lg: { title: 'text-2xl font-black tracking-widest', sub: 'text-xs tracking-widest' },
-    xl: { title: 'text-4xl font-black tracking-widest', sub: 'text-sm tracking-widest' },
+    sm: { title: 'text-lg', sub: 'text-[10px]' },
+    md: { title: 'text-2xl', sub: 'text-xs' },
+    lg: { title: 'text-3xl', sub: 'text-sm' },
+    xl: { title: 'text-4xl', sub: 'text-base' },
   };
-
-  const iconDim = iconSizes[size];
+  const dim = iconSizes[size];
 
   return (
     <div
-      className={`inline-flex items-center gap-3 select-none group ${
+      className={`inline-flex items-center gap-3.5 select-none group ${
         variant === 'vertical' ? 'flex-col text-center' : 'flex-row'
       } ${className}`}
     >
-      {/* ─── Animated 3D Isometric / Cyber-Architectural Mark ─── */}
+      {/* ══════════════════════════════════════════════════════════
+          BIỂU TƯỢNG LOGO MỚI (TÔNG MÀU XANH DƯƠNG CAO CẤP)
+          - Hình khối kiến trúc 3D chữ "H" lồng ghép mái nhà & tòa tháp
+          - Hiệu ứng sống động: Vầng sáng thở đại dương, luồng laser quét
+         ══════════════════════════════════════════════════════════ */}
       <div
         className="relative flex items-center justify-center flex-shrink-0 cursor-pointer"
-        style={{ width: iconDim, height: iconDim }}
+        style={{ width: dim, height: dim }}
       >
-        {/* Ambient Backlight Glow with soft pulse */}
+        {/* Vầng hào quang ánh xanh thở nhẹ nhàng */}
         <div
-          className={`absolute inset-0 rounded-2xl filter blur-md opacity-60 transition-all duration-700 ${
-            animate ? 'animate-pulse-glow' : ''
+          className={`absolute inset-0 rounded-2xl filter blur-md opacity-50 transition-opacity duration-700 ${
+            animate ? 'animate-pulse' : ''
           }`}
           style={{
-            background: 'radial-gradient(circle, rgba(99,102,241,0.8) 0%, rgba(139,92,246,0.6) 45%, rgba(6,182,212,0.4) 80%, transparent 100%)',
+            background: 'radial-gradient(circle, rgba(37,99,235,0.7) 0%, rgba(14,165,233,0.35) 50%, transparent 75%)',
             transform: 'scale(1.25)',
           }}
         />
 
-        {/* Outer Rotating Micro Ring for High-Tech feel */}
+        {/* Khung viền vi lượng tinh tế với hiệu ứng xoay chậm */}
         {animate && (
           <div
-            className="absolute inset-[-4px] rounded-2xl border border-indigo-400/20 border-dashed pointer-events-none group-hover:border-cyan-400/40 transition-colors duration-500"
+            className="absolute inset-[-3px] rounded-2xl border border-blue-400/25 pointer-events-none group-hover:border-cyan-400/60 transition-colors duration-500"
             style={{
-              animation: 'spin 24s linear infinite',
+              animation: 'spin 30s linear infinite',
             }}
           />
         )}
 
-        {/* Core SVG Logo Mark */}
+        {/* SVG Biểu Tượng Chữ H Kiến Trúc Xanh Đại Dương */}
         <svg
           viewBox="0 0 100 100"
-          width={iconDim}
-          height={iconDim}
-          className={`relative z-10 filter drop-shadow-[0_4px_12px_rgba(99,102,241,0.45)] transition-transform duration-500 ease-out ${
+          width={dim}
+          height={dim}
+          className={`relative z-10 drop-shadow-[0_4px_16px_rgba(37,99,235,0.45)] transition-transform duration-300 ease-out ${
             animate ? 'group-hover:scale-105' : ''
           }`}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            {/* Gradients for 3D isometric faceted building / "H" monolith */}
-            <linearGradient id="holoka_grad_left" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#818cf8" />
-              <stop offset="60%" stopColor="#4f46e5" />
-              <stop offset="100%" stopColor="#312e81" />
+            {/* Gradient Cột Trái chữ H */}
+            <linearGradient id="hlk_col_left" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#60a5fa" />
+              <stop offset="50%" stopColor="#2563eb" />
+              <stop offset="100%" stopColor="#1e3a8a" />
             </linearGradient>
 
-            <linearGradient id="holoka_grad_right" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="40%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#7c3aed" />
-            </linearGradient>
-
-            <linearGradient id="holoka_grad_roof" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#a5b4fc" />
-              <stop offset="50%" stopColor="#c084fc" />
-              <stop offset="100%" stopColor="#38bdf8" />
-            </linearGradient>
-
-            <linearGradient id="holoka_bridge" x1="0%" y1="0%" x2="100%" y2="100%">
+            {/* Gradient Cột Phải chữ H (Tòa tháp trung tâm) */}
+            <linearGradient id="hlk_col_right" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#38bdf8" />
-              <stop offset="100%" stopColor="#6366f1" />
+              <stop offset="50%" stopColor="#0284c7" />
+              <stop offset="100%" stopColor="#1d4ed8" />
             </linearGradient>
 
-            <filter id="laser_glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
+            {/* Gradient Cầu Nối Giữa */}
+            <linearGradient id="hlk_bridge" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#0284c7" />
+              <stop offset="50%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#60a5fa" />
+            </linearGradient>
+
+            {/* Gradient Mái Nhà Góc Nhọn */}
+            <linearGradient id="hlk_roof" x1="0%" y1="100%" x2="50%" y2="0%">
+              <stop offset="0%" stopColor="#1d4ed8" />
+              <stop offset="50%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#ffffff" />
+            </linearGradient>
+
+            {/* Bộ lọc phát sáng sắc nét */}
+            <filter id="hlk_laser" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
 
-          {/* Background Rounded Shield Container */}
+          {/* Nền Khiên Bo Tròn Tinh Tế */}
           <rect
             x="4"
             y="4"
             width="92"
             height="92"
-            rx="24"
-            fill="#090d1a"
-            stroke="url(#holoka_grad_roof)"
+            rx="22"
+            fill="#090d16"
+            stroke="url(#hlk_col_right)"
             strokeWidth="1.5"
             strokeOpacity="0.4"
           />
 
-          {/* Background Grid Pattern inside badge */}
-          <path
-            d="M20 28H80M20 50H80M20 72H80M32 16V84M50 16V84M68 16V84"
-            stroke="rgba(255,255,255,0.04)"
-            strokeWidth="1"
-          />
+          {/* Lưới tọa độ kiến trúc chìm */}
+          <line x1="20" y1="50" x2="80" y2="50" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+          <line x1="50" y1="20" x2="50" y2="80" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
 
-          {/* Left Tower of "H" (Modern Architectural Skyscraper) */}
+          {/* Cột trái của chữ H (Tòa nhà hướng nghiêng 3D) */}
           <path
-            d="M24 38L38 30V76L24 68V38Z"
-            fill="url(#holoka_grad_left)"
+            d="M26 36 L40 28 V76 L26 68 Z"
+            fill="url(#hlk_col_left)"
           />
           <path
-            d="M38 30L44 34V80L38 76V30Z"
-            fill="url(#holoka_grad_right)"
+            d="M40 28 L46 32 V80 L40 76 Z"
+            fill="url(#hlk_col_right)"
             fillOpacity="0.85"
           />
-          <path
-            d="M24 38L30 34L44 34L38 30L24 38Z"
-            fill="url(#holoka_grad_roof)"
-          />
 
-          {/* Right Tower of "H" (Higher Twin Tower - Smart Monolith) */}
+          {/* Cột phải của chữ H (Tòa tháp trung tâm cao hơn) */}
           <path
-            d="M56 26L70 18V64L56 56V26Z"
-            fill="url(#holoka_grad_left)"
+            d="M58 24 L72 16 V64 L58 56 Z"
+            fill="url(#hlk_col_left)"
           />
           <path
-            d="M70 18L76 22V68L70 64V18Z"
-            fill="url(#holoka_grad_right)"
-          />
-          <path
-            d="M56 26L62 22L76 22L70 18L56 26Z"
-            fill="url(#holoka_grad_roof)"
-          />
-
-          {/* Sky-Bridge connecting the H (Smart Automation / Connectivity) */}
-          <path
-            d="M38 48L56 42V51L38 57V48Z"
-            fill="url(#holoka_bridge)"
-            filter="url(#laser_glow)"
-          />
-          <path
-            d="M38 48L44 44L62 38L56 42L38 48Z"
-            fill="#e0e7ff"
+            d="M72 16 L78 20 V68 L72 64 Z"
+            fill="url(#hlk_col_right)"
             fillOpacity="0.9"
           />
 
-          {/* Beacon / AI Sensor Signal at Top Right Tower */}
-          <circle cx="70" cy="18" r="3" fill="#22d3ee" className="animate-ping" style={{ animationDuration: '3s' }} />
-          <circle cx="70" cy="18" r="2.5" fill="#ffffff" />
+          {/* Mái nhà kiến trúc giao thoa ở đỉnh */}
+          <path
+            d="M50 14 L78 20 L58 24 Z"
+            fill="url(#hlk_roof)"
+            opacity="0.9"
+          />
 
-          {/* Light Speed Data Dot */}
-          <circle cx="47" cy="45" r="1.8" fill="#38bdf8">
-            <animate
-              attributeName="cx"
-              values="39;55;39"
-              dur="2.5s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="49;41;49"
-              dur="2.5s"
-              repeatCount="indefinite"
-            />
+          {/* Cầu nối trung tâm (Sky-bridge liên kết chữ H) */}
+          <path
+            d="M40 48 L58 42 V50 L40 56 Z"
+            fill="url(#hlk_bridge)"
+            filter="url(#hlk_laser)"
+          />
+
+          {/* Tia sáng động chạy dọc nhịp thở (Laser Energy Pulse) */}
+          {animate && (
+            <circle cx="49" cy="46" r="2.2" fill="#ffffff" filter="url(#hlk_laser)">
+              <animate
+                attributeName="cx"
+                values="41;57;41"
+                dur="2.4s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="cy"
+                values="50;44;50"
+                dur="2.4s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="opacity"
+                values="0.4;1;0.4"
+                dur="2.4s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          )}
+
+          {/* Điểm hải đăng AI trên nóc tháp (Smart Beacon) */}
+          <circle cx="72" cy="16" r="3" fill="#38bdf8" opacity="0.7">
+            <animate attributeName="r" values="3;6;3" dur="2s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.7;0;0.7" dur="2s" repeatCount="indefinite" />
           </circle>
+          <circle cx="72" cy="16" r="2" fill="#ffffff" />
         </svg>
       </div>
 
-      {/* ─── Typography & Slogan ─── */}
+      {/* ══════════════════════════════════════════════════════════
+          CHỮ THƯƠNG HIỆU HOLOKA - XANH DƯƠNG HIỆN ĐẠI, TIN CẬY
+         ══════════════════════════════════════════════════════════ */}
       {variant !== 'icon-only' && (
         <div className="flex flex-col text-left">
-          <div className="flex items-center gap-1.5">
+          {/* Tên thương hiệu: HOLOKA */}
+          <div className="flex items-center gap-1.5 leading-none">
             <span
-              className={`${textSizes[size].title} font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-cyan-200 transition-all duration-300 group-hover:from-white group-hover:to-cyan-400`}
+              className={`font-black ${textSizes[size].title} tracking-wider text-slate-900 dark:text-white transition-colors`}
               style={{
-                fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif",
+                fontFamily: "'Outfit', 'Be Vietnam Pro', -apple-system, sans-serif",
                 letterSpacing: '0.12em',
-                textShadow: '0 2px 10px rgba(99,102,241,0.25)',
               }}
             >
-              HOLOKA
+              HOLO
             </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+            <span
+              className={`font-black ${textSizes[size].title} tracking-wider text-blue-600 dark:text-blue-400`}
+              style={{
+                fontFamily: "'Outfit', 'Be Vietnam Pro', -apple-system, sans-serif",
+                letterSpacing: '0.12em',
+                textShadow: '0 0 20px rgba(37,99,235,0.4)',
+              }}
+            >
+              KA
+            </span>
           </div>
 
+          {/* Phụ đề thương hiệu: Chuẩn SaaS quản lý bất động sản */}
           {showSubtitle && (
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <div className="flex items-center gap-2 mt-1">
               <span
-                className={`${textSizes[size].sub} font-semibold uppercase text-slate-400 group-hover:text-indigo-300 transition-colors duration-300`}
-                style={{ letterSpacing: '0.18em' }}
+                className={`font-bold ${textSizes[size].sub} uppercase text-slate-500 dark:text-slate-400 tracking-wider`}
+                style={{ letterSpacing: '0.14em' }}
               >
-                Property Intelligence
-              </span>
-              <span className="inline-block px-1 py-0.2 rounded text-[8px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                PRO
+                Quản Lý Bất Động Sản
               </span>
             </div>
           )}

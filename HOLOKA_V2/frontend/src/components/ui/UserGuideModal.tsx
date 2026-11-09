@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   BookOpen, Sparkles, X, CheckCircle2,
   Building, FileText, CreditCard, Wrench, BarChart3,
@@ -243,7 +243,7 @@ export default function UserGuideModal({ isOpen, onClose, onOpenAiChat }: UserGu
 
                 {/* Feature 3 */}
                 <div className="border border-slate-200 rounded-2xl p-4.5 bg-slate-50/50 flex gap-4">
-                  <div className="w-11 h-11 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
                     <CreditCard size={22} />
                   </div>
                   <div>
@@ -298,7 +298,7 @@ export default function UserGuideModal({ isOpen, onClose, onOpenAiChat }: UserGu
           {/* TAB 3: CÁCH DÙNG TRỢ LÝ AI HOLOKA */}
           {activeTab === 'ai' && (
             <div className="space-y-5">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-5 shadow-sm">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-3">
                   <Sparkles size={24} className="text-amber-300" />
                   <h3 className="font-black text-lg sm:text-xl">
@@ -460,3 +460,5 @@ export default function UserGuideModal({ isOpen, onClose, onOpenAiChat }: UserGu
     </div>
   );
 }
+
+
