@@ -1,4 +1,4 @@
-import { Brain, TrendingUp, AlertTriangle, Lightbulb, Building2, ArrowUpRight } from 'lucide-react';
+import { Brain, TrendingUp, AlertTriangle, Lightbulb, Building2, ArrowUpRight, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -127,21 +127,32 @@ export default function IntelligencePage() {
   return (
     <div className="space-y-5 pb-10">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2.5">
-          <span
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-200)', color: 'var(--brand-text)' }}
-          >
-            <Brain size={18} />
-          </span>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            {isVi ? 'Phân tích dự báo' : 'Operations Intelligence'}
-          </h1>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <span
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-200)', color: 'var(--brand-text)' }}
+            >
+              <Brain size={18} />
+            </span>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              {isVi ? 'Phân tích dự báo' : 'Operations Intelligence'}
+            </h1>
+          </div>
+          <p className="text-sm mt-1.5" style={{ color: 'var(--text-muted)' }}>
+            {isVi ? 'HOLOKA phân tích dữ liệu vận hành và phát hiện các điểm cần chú ý.' : 'HOLOKA analyzes real-time operations data and detects priority bottlenecks.'}
+          </p>
         </div>
-        <p className="text-sm mt-1.5" style={{ color: 'var(--text-muted)' }}>
-          {isVi ? 'HOLOKA phân tích dữ liệu vận hành và phát hiện các điểm cần chú ý.' : 'HOLOKA analyzes real-time operations data and detects priority bottlenecks.'}
-        </p>
+
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab: 'leakage' } }))}
+          className="btn btn-primary inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+        >
+          <Sparkles size={16} />
+          <span>{isVi ? 'Mở Trung tâm Phân tích AI' : 'Open AI Intelligence Hub'}</span>
+        </button>
       </div>
 
       {error && (

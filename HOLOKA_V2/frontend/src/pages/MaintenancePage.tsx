@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Wrench, Plus, LayoutGrid, Table2 } from 'lucide-react';
+import { Search, Wrench, Plus, LayoutGrid, Table2, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { listMaintenance, createMaintenance, updateMaintenanceStatus } from '../services/maintenanceService';
@@ -245,6 +245,21 @@ export default function MaintenancePage() {
               <Table2 size={16} />
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab: 'priority' } }))}
+            className="btn btn-outline inline-flex items-center gap-1.5 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(59, 130, 246, 0.08))',
+              borderColor: 'rgba(245, 158, 11, 0.35)',
+            }}
+          >
+            <Sparkles size={15} className="text-amber-500 animate-pulse" />
+            <span className="font-semibold text-xs sm:text-sm">
+              {isVi ? 'Phân tích sự cố (AI)' : 'AI Issue Insights'}
+            </span>
+          </button>
 
           <button type="button" onClick={() => setCreateOpen(true)} className="btn btn-primary">
             <Plus size={16} />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, FileText, Calendar, ChevronDown, Plus } from 'lucide-react';
+import { Search, FileText, Calendar, ChevronDown, Plus, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { listContracts, activateContract, terminateContract } from '../services/contractService';
@@ -161,10 +161,26 @@ export default function ContractsPage() {
             {isVi ? 'Quản lý toàn bộ hợp đồng thuê phòng và gia hạn.' : 'Manage all room rental agreements and renewals.'}
           </p>
         </div>
-        <button type="button" className="btn btn-primary">
-          <Plus size={16} />
-          {isVi ? 'Tạo hợp đồng' : 'Create Lease'}
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab: 'priority' } }))}
+            className="btn btn-outline inline-flex items-center gap-1.5 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.08))',
+              borderColor: 'rgba(245, 158, 11, 0.35)',
+            }}
+          >
+            <Sparkles size={15} className="text-amber-500 animate-pulse" />
+            <span className="font-semibold text-xs sm:text-sm">
+              {isVi ? 'Cảnh báo hết hạn (AI)' : 'AI Lease Risk'}
+            </span>
+          </button>
+          <button type="button" className="btn btn-primary">
+            <Plus size={16} />
+            {isVi ? 'Tạo hợp đồng' : 'Create Lease'}
+          </button>
+        </div>
       </div>
 
       {/* Stats strip */}

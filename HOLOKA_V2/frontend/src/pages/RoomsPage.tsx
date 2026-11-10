@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Search, Plus, User, CalendarClock, Building, DoorOpen } from 'lucide-react';
+import { Search, Plus, User, CalendarClock, Building, DoorOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getRooms, type Room } from '../services/roomService';
@@ -82,10 +82,26 @@ export default function RoomsPage() {
             {rooms.length} {isVi ? 'phòng' : 'units'} · {count('OCCUPIED')} {isVi ? 'có khách' : 'occupied'} · {count('AVAILABLE')} {isVi ? 'trống' : 'vacant'} · {count('MAINTENANCE')} {isVi ? 'bảo trì' : 'maintenance'}
           </p>
         </div>
-        <button type="button" className="btn btn-primary">
-          <Plus size={16} />
-          {isVi ? 'Thêm phòng' : 'Add Room'}
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab: 'simulator' } }))}
+            className="btn btn-outline inline-flex items-center gap-1.5 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(59, 130, 246, 0.08))',
+              borderColor: 'rgba(245, 158, 11, 0.35)',
+            }}
+          >
+            <Sparkles size={15} className="text-amber-500 animate-pulse" />
+            <span className="font-semibold text-xs sm:text-sm">
+              {isVi ? 'Mô phỏng tối ưu giá (AI)' : 'AI Rent Simulator'}
+            </span>
+          </button>
+          <button type="button" className="btn btn-primary">
+            <Plus size={16} />
+            {isVi ? 'Thêm phòng' : 'Add Room'}
+          </button>
+        </div>
       </div>
 
       {/* Toolbar */}

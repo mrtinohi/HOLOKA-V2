@@ -9,7 +9,6 @@ import {
 } from '../services/dashboardService';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import AiIntelligenceHub from '../components/ui/AiIntelligenceHub';
 import StatCard from '../components/ui/StatCard';
 
 const money = (n: number, isVi: boolean) =>
@@ -38,19 +37,8 @@ export default function DashboardPage() {
   const [charts, setCharts] = useState<ChartsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showAiHub, setShowAiHub] = useState(false);
-  const [aiHubTab, setAiHubTab] = useState<'leakage' | 'simulator' | 'priority'>('leakage');
 
   const workspaceId = user?.workspaces?.[0]?.id ?? 1;
-
-  useEffect(() => {
-    const handleOpenHub = (e: Event) => {
-      setAiHubTab((e as CustomEvent).detail?.tab || 'leakage');
-      setShowAiHub(true);
-    };
-    window.addEventListener('open-ai-hub', handleOpenHub);
-    return () => window.removeEventListener('open-ai-hub', handleOpenHub);
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -102,8 +90,7 @@ export default function DashboardPage() {
   })();
 
   const openAiWithTab = (tab: 'leakage' | 'simulator' | 'priority') => {
-    setAiHubTab(tab);
-    setShowAiHub(true);
+    window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab } }));
   };
 
   const netProfit = (data.monthlyRevenue || 0) - (data.monthlyExpense || 0);
@@ -359,13 +346,6 @@ export default function DashboardPage() {
           </div>
         </section>
       </div>
-
-      <AiIntelligenceHub
-        isOpen={showAiHub}
-        onClose={() => setShowAiHub(false)}
-        overview={data}
-        initialTab={aiHubTab}
-      />
     </div>
   );
 }

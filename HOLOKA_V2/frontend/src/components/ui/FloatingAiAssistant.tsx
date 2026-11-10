@@ -253,20 +253,20 @@ export const FloatingAiAssistant: React.FC = () => {
 
   const SUGGESTED_PROMPTS = isVi
     ? [
-        { label: 'Rò rỉ lợi nhuận?', icon: '🛡️', q: 'Phát hiện nguy cơ thất thoát lợi nhuận?' },
-        { label: 'Mô phỏng What-If', icon: '🧮', q: 'Mô phỏng phương án kinh doanh What-If?' },
-        { label: 'Việc cần ưu tiên', icon: '🎯', q: 'Việc nào cần ưu tiên xử lý ngay hôm nay?' },
-        { label: 'Phòng đang trống', icon: '🚪', q: 'Có bao nhiêu phòng đang trống?' },
-        { label: 'Thu chi & Nợ', icon: '💰', q: 'Tóm tắt tài chính & nợ?' },
-        { label: 'Tổng quan hôm nay', icon: '📊', q: 'Tổng quan workspace hôm nay?' },
+        { label: '🔍 Biến động lợi nhuận?', icon: '🔍', q: 'Truy tìm nguyên nhân biến động lợi nhuận tháng này?' },
+        { label: '🛡️ Nguy cơ thất thoát?', icon: '🛡️', q: 'Phát hiện nguy cơ thất thoát lợi nhuận?' },
+        { label: '🧮 Mô phỏng What-If', icon: '🧮', q: 'Mô phỏng phương án kinh doanh What-If?' },
+        { label: '📈 Đánh giá sau quyết định', icon: '📈', q: 'Đánh giá hiệu quả sau các quyết định đã thực hiện?' },
+        { label: '🚪 Phòng đang trống', icon: '🚪', q: 'Có bao nhiêu phòng đang trống?' },
+        { label: '💰 Thu chi & Nợ', icon: '💰', q: 'Tóm tắt tài chính & nợ?' },
       ]
     : [
-        { label: 'Profit Leaks?', icon: '🛡️', q: 'Detect profit leakages & anomalies?' },
-        { label: 'What-If Simulation', icon: '🧮', q: 'What-If scenario simulator?' },
-        { label: 'Priority Actions', icon: '🎯', q: 'Which actions to prioritize today?' },
-        { label: 'Vacant Units', icon: '🚪', q: 'How many rooms are vacant?' },
-        { label: 'Finance & Debt', icon: '💰', q: 'Financial summary & arrears?' },
-        { label: 'Today Overview', icon: '📊', q: 'Workspace overview today?' },
+        { label: '🔍 Profit Variation?', icon: '🔍', q: 'Investigate root cause of profit variation?' },
+        { label: '🛡️ Profit Leaks?', icon: '🛡️', q: 'Detect profit leakages & anomalies?' },
+        { label: '🧮 What-If Simulation', icon: '🧮', q: 'What-If scenario decision simulator?' },
+        { label: '📈 Post-Decision Tracker', icon: '📈', q: 'Evaluate efficacy of implemented decisions?' },
+        { label: '🚪 Vacant Units', icon: '🚪', q: 'How many rooms are vacant?' },
+        { label: '💰 Finance & Debt', icon: '💰', q: 'Financial summary & arrears?' },
       ];
 
   const generateAnswer = (query: string): string => {
@@ -295,19 +295,32 @@ export const FloatingAiAssistant: React.FC = () => {
         maximumFractionDigits: 0,
       }).format(n);
 
-    // 1. Profit Leakage Detection
-    if (q.includes('thất thoát') || q.includes('leakage') || q.includes('lỗ') || q.includes('nguy cơ') || q.includes('lợi nhuận')) {
-      const vacancyLost = data.availableRooms * 7000000;
+    // 1. AI Financial Detective (FR-01 to FR-05)
+    if (q.includes('nguyên nhân') || q.includes('biến động') || q.includes('detective') || q.includes('tại sao') || q.includes('giảm lợi nhuận')) {
       return isVi
-        ? `🛡️ **BÁO CÁO PHÁT HIỆN NGUY CƠ THẤT THOÁT LỢI NHUẬN (AI AUDIT):**\n\nHệ thống AI đã phát hiện **3 điểm rò rỉ dòng tiền cốt lõi** với tổng thất thoát tiềm tàng ước tính **~${fmtMoney(vacancyLost + 8520000)} / tháng**:\n\n1. 🚪 **Phòng trống kéo dài (4 phòng):** Thất thoát **${fmtMoney(vacancyLost)}/tháng** (~940.000 ₫ mỗi ngày trôi qua). Nguyên nhân: Giá chào thuê cao hơn khu vực 5% hoặc chưa tiếp thị online.\n2. 💳 **Nợ đọng quá hạn có nguy cơ mất cọc:** **${fmtMoney(data.outstandingPayments)}** chưa thu (P.102 nợ 8.52M quá hạn 11 ngày, P.201 nợ 2.65M).\n3. 🔧 **Bất thường chi phí sửa chữa:** Sự cố rò rỉ nước tại P.302 Thảo Điền lặp lại 2 lần trong 45 ngày (chi phí tăng 35%), cần thay cụm ống xả inox đồng bộ thay vì sửa chắp vá.\n\n👉 *Mẹo: Hãy bấm nút **"Phân tích"** ở thanh tiêu đề để mở Trung Tâm Phân Tích AI 1-click!*`
-        : `🛡️ **AI PROFIT LEAKAGE & ANOMALY REPORT:**\n\nAI detected 3 active capital leaks totaling **~${fmtMoney(vacancyLost + 8520000)} / mo**:\n\n1. 🚪 **Vacant Unit Burn (4 units):** Losing **${fmtMoney(vacancyLost)}/mo** (~940k VND/day).\n2. 💳 **Overdue Bad Debt Risk:** **${fmtMoney(data.outstandingPayments)}** overdue (Unit 102 owes 8.52M 11 days late).\n3. 🔧 **Repair Anomaly:** Recurring plumbing issue at Unit 302 (cost +35%).\n\n👉 *Tip: Click the **"Insights"** button in header to open full AI Intelligence Hub!*`;
+        ? `🔍 **BÁO CÁO AI FINANCIAL DETECTIVE — TRUY TÌM BIẾN ĐỘNG LỢI NHUẬN (FR-01 → FR-05):**\n\nĐối chiếu kỳ **Tháng 10/2026** so với kỳ tham chiếu **Tháng 09/2026**:\n• **Lợi nhuận ròng:** Đạt **88.000.000 ₫** (giảm **-26.5%**, chênh lệch tuyệt đối **-31.700.000 ₫**).\n\n📊 **Phân rã nhân tố đóng góp biến động (Factor Waterfall):**\n1. 🚪 **Doanh thu mất đi do 37 phòng trống:** Đóng góp **-28.000.000 ₫** (45.2% mức sụt giảm). Tập trung nhiều nhất tại cơ sở An Nhiên Phú Nhuận.\n2. 💳 **Nợ tiền nhà phát sinh chậm thu:** **63.775.000 ₫** nợ trôi dạt (tác động **-25.500.000 ₫** dòng tiền khả dụng). Điển hình P.102 nợ 8.520.000 ₫ trễ 11 ngày.\n3. 🔧 **Chi phí sửa chữa vượt kế hoạch:** **+6.200.000 ₫** so với tháng trước do thay van rò rỉ bồn rửa chén và kiểm tra điều hòa.\n\n⚠️ *Lưu ý minh bạch (NFR-02): Các số liệu trên được tính từ sổ thu chi và trạng thái phòng đã kiểm chứng, không tự bịa đặt.*`
+        : `🔍 **AI FINANCIAL DETECTIVE REPORT — PROFIT VARIANCE ANALYSIS (FR-01 → FR-05):**\n\nComparing **October 2026** against reference period **September 2026**:\n• **Net Operating Profit:** **88,000,000 ₫** (down **-26.5%**, absolute drop **-31,700,000 ₫**).\n\n📊 **Factor Attribution Waterfall:**\n1. 🚪 **Vacancy Opportunity Loss (37 units):** Contributed **-28,000,000 ₫** (45.2% of drop).\n2. 💳 **Surging Overdue Rent Receivables:** **63,775,000 ₫** in arrears (Unit 102 owes 8.52M 11 days late).\n3. 🔧 **Unplanned Repair Outlays:** **+6,200,000 ₫** increase vs prior month.\n\n⚠️ *Transparency Note (NFR-02): Computed from actual ledger transactions and verified room states.*`;
     }
 
-    // 2. What-If Profit Scenario Simulation
-    if (q.includes('mô phỏng') || q.includes('what-if') || q.includes('kịch bản') || q.includes('giả định') || q.includes('tăng giá') || q.includes('cải tạo')) {
+    // 2. AI Profit Guardian (FR-06 to FR-10)
+    if (q.includes('thất thoát') || q.includes('leakage') || q.includes('guardian') || q.includes('lỗ') || q.includes('nguy cơ') || q.includes('bất thường')) {
       return isVi
-        ? `🧮 **MÔ PHỎNG LỢI NHUẬN KINH DOANH WHAT-IF (HOLOKA AI ENGINE):**\n\nDựa trên quy mô 18 phòng và doanh thu hiện tại (${fmtMoney(data.monthlyRevenue)}/tháng), AI đã mô phỏng 3 phương án để bạn ra quyết định:\n\n• **Phương án A (Tăng giá thuê +10%):** Doanh thu đạt **~94.4 triệu ₫/tháng**, nhưng tỷ lệ lấp đầy có thể giảm xuống 68% nếu không nâng cấp chất lượng phòng.\n• **Phương án B (Giữ giá + Cải tạo 15 triệu/phòng):** Lấp đầy 100% (18/18 phòng), doanh thu đạt **135 triệu ₫/tháng**. Lợi nhuận ròng tăng **+42%**, thời gian hoàn vốn đầu tư chỉ **3.2 tháng** (AI khuyến nghị cao nhất! ✅).\n• **Phương án C (Chi 2 triệu Marketing phòng trống):** Lấp đầy nhanh 4 phòng trong 10 ngày, mang về thêm **+28 triệu ₫/tháng** doanh thu ròng ngay tức thì.\n\n👉 *Mở công cụ **Mô Phỏng AI** để tự tay kéo thanh trượt giả định giá thuê & tỷ lệ lấp đầy!*`
-        : `🧮 **WHAT-IF PROFIT SCENARIO ENGINE:**\n\nBased on your 18-room portfolio and ${fmtMoney(data.monthlyRevenue)} monthly revenue:\n\n• **Option A (+10% Rent):** Expands gross to ~94.4M, but occupancy may dip to 68%.\n• **Option B (Renovation 15M/room):** Achieves 100% occupancy (135M revenue), payback in 3.2 months (Top AI Pick! ✅).\n• **Option C (2M Ad Spend):** Fills 4 vacancies in 10 days (+28M/mo net).\n\n👉 *Open AI Intelligence Hub to slide interactive assumptions!*`;
+        ? `🛡️ **BÁO CÁO AI PROFIT GUARDIAN — PHÁT HIỆN NGUY CƠ THẤT THOÁT (FR-06 → FR-10):**\n\nAI đã quét toàn bộ giao dịch, công nợ và định mức chi phí theo các ngưỡng cảnh báo đã cấu hình:\n\n🚨 **1. Cảnh báo khẩn cấp (Độ tin cậy 94%):** Chi phí sửa chữa P.302 vượt định mức thông thường 40% (ghi nhận 1.850.000 ₫ so với mức bình quân 450.000 ₫). Đề nghị kiểm tra hóa đơn vật tư trước khi thanh toán cho thợ.\n🚨 **2. Cảnh báo nợ quá hạn (Độ tin cậy 98%):** Khoản nợ P.102 (chị Trang) **8.520.000 ₫** đã trễ 11 ngày (vượt ngưỡng 7 ngày). Cần gọi điện hoặc gửi giấy nhắc nợ chính thức.\n⚠️ **3. Cảnh báo phòng trống kéo dài (Độ tin cậy 89%):** Phòng P.305 đã để trống liên tục 32 ngày (vượt ngưỡng 14 ngày). Thiệt hại tích lũy ước tính ~7.460.000 ₫.\n\n📌 *Lưu ý (FR-10): Vượt ngưỡng cảnh báo không đồng nghĩa với gian lận hoặc thất thoát đã được chứng minh.*`
+        : `🛡️ **AI PROFIT GUARDIAN — ANOMALY & LEAKAGE DETECTION (FR-06 → FR-10):**\n\nAI scanned ledger transactions, debt aging, and asset operational states against active thresholds:\n\n🚨 **1. Urgent Flag (Confidence 94%):** Repair bill for Unit 302 exceeds standard benchmark by 40% (1,850,000 ₫ billed vs 450,000 ₫ benchmark). Cross-check parts receipt before paying.\n🚨 **2. Overdue Aging Flag (Confidence 98%):** Room 102 arrears of **8,520,000 ₫** delayed 11 days (threshold: 7 days).\n⚠️ **3. Extended Vacancy Flag (Confidence 89%):** Room 305 vacant for 32 consecutive days.\n\n📌 *Operational Notice (FR-10): Threshold flags do not imply proven fraud or loss.*`;
+    }
+
+    // 3. AI Decision Simulator (FR-11 to FR-15)
+    if (q.includes('mô phỏng') || q.includes('simulator') || q.includes('what-if') || q.includes('kịch bản') || q.includes('giả định') || q.includes('tăng giá') || q.includes('giảm giá')) {
+      return isVi
+        ? `🧮 **AI DECISION SIMULATOR — MÔ PHỎNG PHƯƠNG ÁN KINH DOANH (FR-11 → FR-15):**\n\nAI tính toán kết quả dự kiến dựa trên công thức tài chính xác định (NFR-01):\n\n• **Kịch bản A (Giảm giá 5% kích cầu):**\n  - Đơn giá bình quân mới: 6.650.000 ₫/tháng.\n  - Mục tiêu lấp đầy: 75% (45/60 phòng).\n  - Doanh thu dự kiến: **299.250.000 ₫/tháng** | Lợi nhuận ròng: **+274.750.000 ₫**.\n  - 🎯 **Điều kiện hòa vốn (FR-13):** Bạn cần lấp đầy tối thiểu **25/60 phòng (41.7%)** để không bị giảm doanh thu hiện tại.\n• **Độ không chắc chắn (FR-15):** Lợi nhuận nằm trong khoảng dao động ±6% (do tính mùa vụ).\n\n👉 *Nhấn nút bên dưới để mở bộ thanh trượt tương tác What-If trực tiếp!*`
+        : `🧮 **AI DECISION SIMULATOR — WHAT-IF SCENARIOS (FR-11 → FR-15):**\n\nComputed using deterministic financial formulas (NFR-01):\n\n• **Scenario A (5% Discount Incentive):**\n  - New avg rent: 6,650,000 ₫/mo | Target Occupancy: 75% (45/60 units).\n  - Projected Gross: **299,250,000 ₫/mo** | Net Profit: **+274,750,000 ₫**.\n  - 🎯 **Break-even Condition (FR-13):** You must lease at least **25/60 units (41.7%)** to preserve current revenue.\n• **Uncertainty Range (FR-15):** Sensitivity bounds are ±6% due to market seasonality.`;
+    }
+
+    // 4. AI Learning Loop (FR-16 to FR-20)
+    if (q.includes('đánh giá') || q.includes('learning') || q.includes('hiệu quả') || q.includes('sau quyết định') || q.includes('bài học')) {
+      return isVi
+        ? `📈 **AI LEARNING LOOP — ĐÁNH GIÁ HIỆU QUẢ SAU QUYẾT ĐỊNH (FR-16 → FR-20):**\n\nTheo dõi các quyết định đã thực hiện và đối chiếu chỉ số Trước vs Sau:\n\n• **Quyết định DEC-001 (Chiến dịch ưu đãi hợp đồng 12 tháng tại Bình Thạnh):**\n  - 📊 **Tỷ lệ lấp đầy:** Tăng từ **35% lên 52%** (lấp thêm 7 phòng).\n  - 💰 **Doanh thu ròng:** Tăng từ **84M lên 119M ₫/tháng** (+35 triệu ₫/tháng).\n  - 🎯 **Độ đạt mục tiêu:** **116%** so với kỳ vọng ban đầu.\n  - 🔍 **Yếu tố gây nhiễu quan sát (FR-19):** Trùng vào đợt sinh viên nhập học và tòa nhà lân cận vừa tăng giá 8%.\n  - ✓ **Bài học đã xác nhận (FR-20):** Tặng voucher điện nước kích thích khách chốt cọc nhanh trong 24h.`
+        : `📈 **AI LEARNING LOOP — POST-DECISION EFFICACY (FR-16 → FR-20):**\n\nTracking implemented management decisions Before vs After:\n\n• **Decision DEC-001 (12-Month Lease Incentive Campaign at Binh Thanh):**\n  - 📊 **Occupancy:** Rose from **35% to 52%** (+7 signed leases).\n  - 💰 **Monthly Revenue:** Rose from **84M to 119M ₫/month** (+35M net gain).\n  - 🎯 **Goal Achievement Rate:** **116%** of initial objective.\n  - 🔍 **Confounding Influences (FR-19):** Conincided with university intake and rival raising prices 8%.\n  - ✓ **Validated Lesson (FR-20):** Utility incentives dramatically accelerate same-day lease closings.`;
     }
 
     // 3. Action Priority Matrix
@@ -683,6 +696,47 @@ export const FloatingAiAssistant: React.FC = () => {
                           }
                         >
                           {renderFormattedText(msg.content)}
+
+                          {!isUser && (
+                            msg.content.includes('DETECTIVE') || msg.content.includes('BIẾN ĐỘNG') ||
+                            msg.content.includes('GUARDIAN') || msg.content.includes('THẤT THOÁT') || msg.content.includes('LEAKAGE') ||
+                            msg.content.includes('SIMULATOR') || msg.content.includes('MÔ PHỎNG') || msg.content.includes('WHAT-IF') ||
+                            msg.content.includes('LEARNING LOOP') || msg.content.includes('ĐÁNH GIÁ')
+                          ) && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                let tab: 'detective' | 'guardian' | 'simulator' | 'learning' = 'detective';
+                                if (msg.content.includes('SIMULATOR') || msg.content.includes('MÔ PHỎNG') || msg.content.includes('WHAT-IF')) {
+                                  tab = 'simulator';
+                                } else if (msg.content.includes('GUARDIAN') || msg.content.includes('THẤT THOÁT') || msg.content.includes('LEAKAGE')) {
+                                  tab = 'guardian';
+                                } else if (msg.content.includes('LEARNING LOOP') || msg.content.includes('ĐÁNH GIÁ')) {
+                                  tab = 'learning';
+                                } else {
+                                  tab = 'detective';
+                                }
+                                window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab } }));
+                              }}
+                              className="mt-2.5 w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:opacity-90 active:scale-98 shadow-2xs"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(59, 130, 246, 0.15))',
+                                border: '1px solid var(--brand)',
+                                color: 'var(--brand-text)',
+                              }}
+                            >
+                              <Sparkles size={13} className="text-amber-500 animate-pulse" />
+                              <span>
+                                {msg.content.includes('SIMULATOR') || msg.content.includes('MÔ PHỎNG') || msg.content.includes('WHAT-IF')
+                                  ? (isVi ? 'Mở Mô Phỏng Phương Án (Decision Simulator) →' : 'Open Decision Simulator →')
+                                  : msg.content.includes('GUARDIAN') || msg.content.includes('THẤT THOÁT') || msg.content.includes('LEAKAGE')
+                                  ? (isVi ? 'Mở Cảnh Báo Thất Thoát (Profit Guardian) →' : 'Open Profit Guardian Hub →')
+                                  : msg.content.includes('LEARNING LOOP') || msg.content.includes('ĐÁNH GIÁ')
+                                  ? (isVi ? 'Mở Đánh Giá Sau Quyết Định (Learning Loop) →' : 'Open Learning Loop Hub →')
+                                  : (isVi ? 'Mở Truy Tìm Biến Động (Financial Detective) →' : 'Open Financial Detective Hub →')}
+                              </span>
+                            </button>
+                          )}
 
                           {/* Meta & Actions */}
                           <div

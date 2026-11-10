@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface RoomRepository extends JpaRepository<Room,Long>, JpaSpecificationExecutor<Room> {
     Optional<Room> findByIdAndWorkspaceId(long id,long workspaceId);
+    Optional<Room> findByRoomCodeAndWorkspaceId(String roomCode, long workspaceId);
     @Query("select r.propertyId from Room r where r.id=:id and r.workspaceId=:workspaceId")
     Optional<Long> parentPropertyId(@Param("id") long id,@Param("workspaceId") long workspaceId);
     boolean existsByWorkspaceIdAndBuildingId(long workspaceId,long buildingId);

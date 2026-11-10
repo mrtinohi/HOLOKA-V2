@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, TrendingUp, TrendingDown, DollarSign, CheckCircle2, Receipt } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, DollarSign, CheckCircle2, Receipt, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { listInvoices } from '../services/financeService';
@@ -60,13 +60,29 @@ export default function FinancePage() {
   return (
     <div className="space-y-5 pb-10">
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-          {isVi ? 'Hóa đơn & dòng tiền' : 'Invoices & Payments'}
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-          {isVi ? 'Theo dõi hóa đơn, công nợ và tình hình thu tiền.' : 'Track invoices, receivables, and cashflow.'}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            {isVi ? 'Hóa đơn & dòng tiền' : 'Invoices & Payments'}
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            {isVi ? 'Theo dõi hóa đơn, công nợ và tình hình thu tiền.' : 'Track invoices, receivables, and cashflow.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab: 'leakage' } }))}
+          className="btn btn-outline inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.08))',
+            borderColor: 'rgba(245, 158, 11, 0.35)',
+          }}
+        >
+          <Sparkles size={15} className="text-amber-500 animate-pulse" />
+          <span className="font-semibold text-xs sm:text-sm">
+            {isVi ? 'Phân tích thất thoát & nợ (AI)' : 'AI Debt & Loss Analysis'}
+          </span>
+        </button>
       </div>
 
       {/* KPI */}

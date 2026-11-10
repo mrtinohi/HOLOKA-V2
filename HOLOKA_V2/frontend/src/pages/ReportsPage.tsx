@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, Building2, Wrench, Download, BarChart3, Receipt } from 'lucide-react';
+import { TrendingUp, Building2, Wrench, Download, BarChart3, Receipt, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getDashboardOverview, getDashboardCharts, type OverviewData } from '../services/dashboardService';
@@ -74,10 +74,26 @@ export default function ReportsPage() {
             {isVi ? 'Đánh giá hiệu quả vận hành theo tài chính, lấp đầy và bảo trì.' : 'Evaluate operational performance across finance, occupancy, and maintenance.'}
           </p>
         </div>
-        <button type="button" onClick={() => window.print()} className="btn btn-secondary no-print">
-          <Download size={16} />
-          {isVi ? 'Xuất PDF' : 'Export PDF'}
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap no-print">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-ai-hub', { detail: { tab: 'simulator' } }))}
+            className="btn btn-outline inline-flex items-center gap-1.5 cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(59, 130, 246, 0.08))',
+              borderColor: 'rgba(245, 158, 11, 0.35)',
+            }}
+          >
+            <Sparkles size={15} className="text-amber-500 animate-pulse" />
+            <span className="font-semibold text-xs sm:text-sm">
+              {isVi ? 'Mô phỏng tài chính (AI)' : 'AI Financial Simulator'}
+            </span>
+          </button>
+          <button type="button" onClick={() => window.print()} className="btn btn-secondary">
+            <Download size={16} />
+            {isVi ? 'Xuất PDF' : 'Export PDF'}
+          </button>
+        </div>
       </div>
 
       {error && (

@@ -3,11 +3,12 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import {
   Building2, Users, FileText, LayoutDashboard,
   Wrench, CheckSquare, CreditCard, ChevronRight,
-  DoorOpen, Menu, X, BarChart3, HelpCircle, Shield, Server,
+  DoorOpen, Menu, X, BarChart3, HelpCircle, Shield, Server, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getUnreadCount } from '../services/notificationService';
+import { getDashboardOverview, type OverviewData } from '../services/dashboardService';
 import Logo from '../components/ui/Logo';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 import ThemeToggle from '../components/ui/ThemeToggle';
@@ -16,6 +17,7 @@ import WelcomeAiGreeting from '../components/ui/WelcomeAiGreeting';
 import UserGuideModal from '../components/ui/UserGuideModal';
 import NotificationDropdown from '../components/ui/NotificationDropdown';
 import UserProfileDropdown, { cleanMojibake } from '../components/ui/UserProfileDropdown';
+import AiIntelligenceHub, { type AiCapabilityTab } from '../components/ui/AiIntelligenceHub';
 
 interface NavItem {
   to: string;
@@ -137,6 +139,19 @@ export default function MainLayout() {
   const [unread, setUnread] = useState(0);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [largeFont, setLargeFont] = useState(() => localStorage.getItem('holoka_large_font') === 'true');
+  const [showAiHub, setShowAiHub] = useState(false);
+  const [aiHubTab, setAiHubTab] = useState<AiCapabilityTab>('detective');
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+
+  useEffect(() => {
+    const handleOpenHub = (e: Event) => {
+      const tab = (e as CustomEvent).detail?.tab || 'detective';
+      setAiHubTab(tab);
+      setShowAiHub(true);
+    };
+    window.addEventListener('open-ai-hub', handleOpenHub);
+    return () => window.removeEventListener('open-ai-hub', handleOpenHub);
+  }, []);
 
   const [showWelcome, setShowWelcome] = useState(() => {
     const justLoggedIn = sessionStorage.getItem('holoka_just_logged_in') === 'true';
@@ -167,6 +182,13 @@ export default function MainLayout() {
     const interval = setInterval(load, 60_000);
     return () => clearInterval(interval);
   }, [wsId]);
+
+  useEffect(() => {
+    if (!user || user.platformAdmin || !wsId) return;
+    getDashboardOverview(wsId)
+      .then(setOverview)
+      .catch(() => {});
+  }, [user, wsId]);
 
   const navGroups = user?.platformAdmin
     ? PLATFORM_NAV_GROUPS
@@ -308,6 +330,28 @@ export default function MainLayout() {
             <ThemeToggle variant="icon" />
             <LanguageSwitcher />
 
+            {!user?.platformAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAiHubTab('leakage');
+                  setShowAiHub(true);
+                }}
+                className="btn btn-ghost inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-all text-xs font-bold shadow-2xs hover:shadow-xs cursor-pointer"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(59, 130, 246, 0.12))',
+                  borderColor: 'rgba(245, 158, 11, 0.35)',
+                  color: 'var(--text-primary)',
+                }}
+                title={isVi ? 'Mở Trung tâm Phân tích AI HOLOKA (Nguy cơ thất thoát, Mô phỏng, Ưu tiên)' : 'Open HOLOKA AI Intelligence Hub'}
+              >
+                <Sparkles size={14} className="text-amber-500 animate-pulse flex-shrink-0" />
+                <span className="hidden sm:inline font-bold bg-gradient-to-r from-amber-600 via-rose-500 to-blue-600 bg-clip-text text-transparent">
+                  {isVi ? 'Phân tích AI' : 'AI Insights'}
+                </span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setLargeFont(v => !v)}
@@ -360,6 +404,30 @@ export default function MainLayout() {
             sessionStorage.removeItem('holoka_just_logged_in');
             setShowWelcome(false);
           }}
+        />
+      )}
+
+      {!user?.platformAdmin && (
+        <AiIntelligenceHub
+          isOpen={showAiHub}
+          onClose={() => setShowAiHub(false)}
+          overview={overview || {
+            totalProperties: 3,
+            totalBuildings: 4,
+            totalRooms: 18,
+            occupiedRooms: 11,
+            availableRooms: 4,
+            maintenanceRooms: 1,
+            occupancyRate: 61.1,
+            monthlyRevenue: 85850000,
+            monthlyExpense: 300000,
+            outstandingPayments: 63775000,
+            activeContracts: 11,
+            contractsExpiringSoon: 2,
+            openMaintenance: 1,
+            pendingTasks: 3,
+          }}
+          initialTab={aiHubTab}
         />
       )}
     </div>

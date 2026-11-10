@@ -10,6 +10,7 @@ public interface ContractRepository extends JpaRepository<Contract,Long>,JpaSpec
     @Query("select count(c)>0 from Contract c, Room r where c.workspaceId=:workspace and c.tenantId=:tenant and c.propertyId=:property and c.status<>com.holoka.contract.ContractStatus.DRAFT and r.id=c.roomId and r.workspaceId=c.workspaceId and (:building is null or r.buildingId=:building) and (:room is null or c.roomId=:room)")
     boolean hasMaintenanceRelationship(long workspace,long tenant,long property,Long building,Long room);
     Optional<Contract> findByIdAndWorkspaceId(long id,long workspaceId);
+    Optional<Contract> findByContractCodeAndWorkspaceId(String contractCode, long workspaceId);
     @Query("select c.propertyId from Contract c where c.id=:id and c.workspaceId=:workspace")
     Optional<Long> parentId(@Param("id") long id,@Param("workspace") long workspace);
     boolean existsByWorkspaceIdAndTenantId(long workspace,long tenant);

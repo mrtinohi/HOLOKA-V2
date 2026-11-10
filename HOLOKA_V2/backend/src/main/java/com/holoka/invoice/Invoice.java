@@ -27,6 +27,10 @@ public class Invoice extends TimedEntity {
     @Column(nullable=false,precision=19,scale=2) private BigDecimal paidAmount=BigDecimal.ZERO;
     @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private InvoiceStatus status=InvoiceStatus.DRAFT;
     public Invoice(Contract c) {workspaceId=c.getWorkspaceId();propertyId=c.getPropertyId();tenantId=c.getTenantId();roomId=c.getRoomId();contractId=c.getId();}
+    /** Seed-only constructor — bypasses Contract entity requirement. */
+    public Invoice(long workspaceId,long propertyId,long tenantId,long roomId,long contractId) {
+        this.workspaceId=workspaceId;this.propertyId=propertyId;this.tenantId=tenantId;this.roomId=roomId;this.contractId=contractId;
+    }
     public void edit(String code,LocalDate month,LocalDate due,BigDecimal rent,BigDecimal electricity,BigDecimal water,BigDecimal service,BigDecimal other) {
         invoiceCode=code;billingMonth=month;dueDate=due;rentAmount=rent;electricityAmount=electricity;waterAmount=water;serviceAmount=service;otherAmount=other;
         totalAmount=rent.add(electricity).add(water).add(service).add(other);
