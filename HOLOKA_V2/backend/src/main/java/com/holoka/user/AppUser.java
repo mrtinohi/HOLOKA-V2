@@ -19,5 +19,23 @@ public class AppUser extends TimedEntity {
     public AppUser(String name, String email, String hash) {
         this.fullName = name; this.email = email; this.passwordHash = hash;
     }
+    public AppUser(String name, String email, String hash, boolean platformAdmin) {
+        this.fullName = name; this.email = email; this.passwordHash = hash; this.platformAdmin = platformAdmin;
+    }
     public void changePassword(String hash) { passwordHash = hash; tokenVersion++; }
+    public void updateProfile(String fullName) {
+        if (fullName != null && !fullName.isBlank()) {
+            this.fullName = fullName.strip();
+        }
+    }
+    public void adminUpdate(String fullName, String email, boolean platformAdmin) {
+        if (fullName != null && !fullName.isBlank()) this.fullName = fullName.strip();
+        if (email != null && !email.isBlank()) this.email = email.strip().toLowerCase();
+        this.platformAdmin = platformAdmin;
+        this.tokenVersion++;
+    }
+    public void toggleEnabled() {
+        this.enabled = !this.enabled;
+        this.tokenVersion++;
+    }
 }

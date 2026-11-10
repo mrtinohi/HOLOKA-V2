@@ -46,7 +46,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(HttpMethod.GET, "/api/health", "/actuator/health", "/actuator/health/liveness", "/actuator/health/readiness", "/api/auth/csrf").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
-                    .requestMatchers("/api/auth/me", "/api/auth/change-password", "/api/auth/logout", "/api/workspaces/**",
+                    .requestMatchers("/api/auth/me", "/api/auth/profile", "/api/auth/change-password", "/api/auth/logout", "/api/workspaces/**",
+                        "/api/platform", "/api/platform/**",
                         "/api/properties", "/api/properties/**", "/api/buildings", "/api/buildings/**", "/api/rooms", "/api/rooms/**",
                         "/api/tenants", "/api/tenants/**", "/api/contracts", "/api/contracts/**",
                         "/api/invoices", "/api/invoices/**", "/api/payments", "/api/payments/**",

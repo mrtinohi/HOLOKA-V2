@@ -15,4 +15,5 @@ public class Workspace extends TimedEntity {
     @Column(nullable = false) private int vacancyAlertDays = 30;
     @Column(nullable = false) private boolean enabled = true;
     public Workspace(String name) { this.name = name; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }

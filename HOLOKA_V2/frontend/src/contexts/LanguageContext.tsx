@@ -18,6 +18,9 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Navigation Categories
     'nav.group_overview': 'Tổng quan',
+    'nav.group_platform': 'Quản trị Nền tảng (HOLOKA Super)',
+    'nav.group_platform_core': 'Quản trị Nền tảng',
+    'nav.group_platform_security': 'An ninh & Hệ thống',
     'nav.group_assets': 'Quản lý tài sản',
     'nav.group_leases': 'Khách thuê & Hợp đồng',
     'nav.group_finance': 'Tài chính & Thu chi',
@@ -27,6 +30,11 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Navigation Items
     'nav.dashboard': 'Bàn làm việc',
+    'nav.platform_dashboard': 'Tổng quan nền tảng',
+    'nav.platform_users': 'Quản lý tài khoản',
+    'nav.platform_workspaces': 'Khách hàng & Tổ chức',
+    'nav.platform_audit_logs': 'Nhật ký kiểm toán',
+    'nav.platform_settings': 'Cấu hình nền tảng',
     'nav.properties': 'Bất động sản',
     'nav.buildings': 'Tòa nhà',
     'nav.rooms': 'Phòng & Căn hộ',
@@ -52,6 +60,21 @@ const translations: Record<Language, Record<string, string>> = {
     'layout.ai_core': 'Trợ lý ảo hỗ trợ',
     'layout.ai_status': 'Sẵn sàng hỗ trợ 24/7',
     'layout.admin_role': 'Chủ nhà / Quản lý',
+
+    // Notifications Dropdown & Popup
+    'notif.dropdown_title': 'Thông báo',
+    'notif.mark_all_read': 'Đã đọc tất cả',
+    'notif.tab_all': 'Tất cả',
+    'notif.tab_unread': 'Chưa đọc',
+    'notif.tab_urgent': 'Khẩn cấp',
+    'notif.empty_title': 'Không có thông báo mới',
+    'notif.empty_desc': 'Bạn đã cập nhật tất cả thông tin và cảnh báo quan trọng.',
+    'notif.empty_unread': 'Không có thông báo chưa đọc nào.',
+    'notif.empty_urgent': 'Không có cảnh báo khẩn cấp nào.',
+    'notif.view_all': 'Xem tất cả thông báo',
+    'notif.mark_read': 'Đánh dấu đã đọc',
+    'notif.new': 'mới',
+    'notif.open_details': 'Xem chi tiết',
 
     // Theme
     'theme.mode': 'Chế độ giao diện',
@@ -132,6 +155,9 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Navigation Categories
     'nav.group_overview': 'Overview',
+    'nav.group_platform': 'Platform Admin (HOLOKA Super)',
+    'nav.group_platform_core': 'Platform Administration',
+    'nav.group_platform_security': 'Security & System',
     'nav.group_assets': 'Asset Management',
     'nav.group_leases': 'Tenants & Leases',
     'nav.group_finance': 'Finance & Cashflow',
@@ -141,6 +167,11 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Navigation Items
     'nav.dashboard': 'Dashboard',
+    'nav.platform_dashboard': 'Platform Dashboard',
+    'nav.platform_users': 'Users & Roles',
+    'nav.platform_workspaces': 'Client Organizations',
+    'nav.platform_audit_logs': 'Audit Trail & Logs',
+    'nav.platform_settings': 'Platform Settings',
     'nav.properties': 'Properties',
     'nav.buildings': 'Buildings',
     'nav.rooms': 'Rooms & Units',
@@ -166,6 +197,21 @@ const translations: Record<Language, Record<string, string>> = {
     'layout.ai_core': 'AI Assistant',
     'layout.ai_status': 'Ready to assist 24/7',
     'layout.admin_role': 'Owner / Manager',
+
+    // Notifications Dropdown & Popup
+    'notif.dropdown_title': 'Notifications',
+    'notif.mark_all_read': 'Mark all read',
+    'notif.tab_all': 'All',
+    'notif.tab_unread': 'Unread',
+    'notif.tab_urgent': 'Urgent',
+    'notif.empty_title': 'No new notifications',
+    'notif.empty_desc': 'You are caught up on all important property alerts.',
+    'notif.empty_unread': 'No unread notifications.',
+    'notif.empty_urgent': 'No urgent alerts.',
+    'notif.view_all': 'View all notifications',
+    'notif.mark_read': 'Mark as read',
+    'notif.new': 'new',
+    'notif.open_details': 'Open details',
 
     // Theme
     'theme.mode': 'Color Theme',

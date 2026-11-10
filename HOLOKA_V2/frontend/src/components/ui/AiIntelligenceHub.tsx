@@ -211,25 +211,30 @@ export default function AiIntelligenceHub({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-sans">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 backdrop-blur-sm transition-opacity"
+        style={{ background: 'rgba(15, 23, 42, 0.55)' }}
         onClick={onClose}
       />
 
       {/* Main Dialog (Light Mode, Senior-Friendly, High Contrast) */}
       <div
-        className="relative w-full max-w-4xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden text-slate-800 z-10 my-auto flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-4xl rounded-2xl overflow-hidden z-10 my-auto flex flex-col max-h-[92vh]"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)', color: 'var(--text-primary)' }}
       >
         {/* Top Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div
+          className="px-5 py-4 flex items-center justify-between gap-4"
+          style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-subtle)' }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-md">
               <Sparkles size={22} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-black text-[var(--text-primary)] tracking-tight">
                 {isVi ? 'Trợ Lý AI HOLOKA — Hỗ Trợ Chủ Nhà' : 'HOLOKA AI Landlord Assistant'}
               </h2>
-              <p className="text-sm font-medium text-slate-600 mt-0.5">
+              <p className="text-sm font-medium text-[var(--text-secondary)] mt-0.5">
                 {isVi
                   ? 'Phát hiện thất thoát tiền • Tính toán lợi nhuận • Nhắc việc quan trọng cần làm'
                   : 'Loss prevention • Profit simulation • Priority task guidance'}
@@ -239,7 +244,8 @@ export default function AiIntelligenceHub({
 
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-2xl bg-slate-200/80 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors cursor-pointer text-base font-bold"
+            className="btn btn-ghost btn-icon"
+            aria-label={isVi ? 'Đóng cửa sổ' : 'Close'}
             title="Đóng cửa sổ"
           >
             <X size={20} />
@@ -247,7 +253,7 @@ export default function AiIntelligenceHub({
         </div>
 
         {/* 3 Main Tabs (Large, Clear, High-Contrast) */}
-        <div className="flex items-center border-b border-slate-200 bg-white px-6 gap-2 overflow-x-auto">
+        <div className="flex items-center border-b border-[var(--border)] bg-[var(--surface)] px-6 gap-2 overflow-x-auto">
           {[
             {
               id: 'leakage',
@@ -279,7 +285,7 @@ export default function AiIntelligenceHub({
                 className={`py-4 px-4 font-bold text-sm sm:text-base border-b-4 transition-all flex items-center gap-2.5 whitespace-nowrap cursor-pointer ${
                   active
                     ? 'border-blue-600 text-blue-700 bg-blue-50/50'
-                    : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                 }`}
               >
                 <span>{tab.label}</span>
@@ -295,7 +301,7 @@ export default function AiIntelligenceHub({
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/60">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[var(--surface-subtle)]/60">
 
           {/* ══════════ TAB 1: NGUY CƠ THẤT THOÁT TIỀN ══════════ */}
           {activeTab === 'leakage' && (
@@ -321,12 +327,12 @@ export default function AiIntelligenceHub({
                 </div>
 
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="px-4 py-2.5 rounded-xl bg-white border border-rose-200 shadow-sm text-center">
-                    <p className="text-xs font-bold text-slate-500 uppercase">{isVi ? 'Phòng trống' : 'Vacancies'}</p>
+                  <div className="px-4 py-2.5 rounded-xl bg-[var(--surface)] border border-rose-200 shadow-sm text-center">
+                    <p className="text-xs font-bold text-[var(--text-muted)] uppercase">{isVi ? 'Phòng trống' : 'Vacancies'}</p>
                     <p className="text-xl font-black text-amber-600">{overview.availableRooms} {isVi ? 'phòng' : 'rooms'}</p>
                   </div>
-                  <div className="px-4 py-2.5 rounded-xl bg-white border border-rose-200 shadow-sm text-center">
-                    <p className="text-xs font-bold text-slate-500 uppercase">{isVi ? 'Khách nợ' : 'Arrears'}</p>
+                  <div className="px-4 py-2.5 rounded-xl bg-[var(--surface)] border border-rose-200 shadow-sm text-center">
+                    <p className="text-xs font-bold text-[var(--text-muted)] uppercase">{isVi ? 'Khách nợ' : 'Arrears'}</p>
                     <p className="text-xl font-black text-rose-600">{fmtMoney(overview.outstandingPayments)}</p>
                   </div>
                 </div>
@@ -334,7 +340,7 @@ export default function AiIntelligenceHub({
 
               {/* Detail Items */}
               <div className="space-y-4">
-                <h4 className="text-base font-black text-slate-800 flex items-center gap-2">
+                <h4 className="text-base font-black text-[var(--text-primary)] flex items-center gap-2">
                   <Info size={18} className="text-blue-600" />
                   {isVi ? 'Chi tiết 3 vấn đề đang làm giảm tiền lời của bạn:' : 'Detailed Loss Points:'}
                 </h4>
@@ -343,7 +349,7 @@ export default function AiIntelligenceHub({
                   {leakageData.items.map(item => (
                     <div
                       key={item.id}
-                      className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3"
+                      className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all space-y-3"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5">
@@ -353,7 +359,7 @@ export default function AiIntelligenceHub({
                           >
                             {item.severity}
                           </span>
-                          <h5 className="text-base font-extrabold text-slate-900">{item.title}</h5>
+                          <h5 className="text-base font-extrabold text-[var(--text-primary)]">{item.title}</h5>
                         </div>
 
                         <span className="text-lg font-black text-rose-600 flex-shrink-0">
@@ -361,15 +367,15 @@ export default function AiIntelligenceHub({
                         </span>
                       </div>
 
-                      <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
                         {item.sub}
                       </p>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm space-y-1.5">
-                        <p className="text-slate-800 font-medium">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] text-sm space-y-1.5">
+                        <p className="text-[var(--text-primary)] font-medium">
                           <strong className="text-amber-800">🔍 Tại sao bị:</strong> {item.rootCause}
                         </p>
-                        <p className="text-slate-800 font-medium">
+                        <p className="text-[var(--text-primary)] font-medium">
                           <strong className="text-emerald-700">💡 Lời khuyên của AI:</strong> {item.suggestion}
                         </p>
                       </div>
@@ -390,9 +396,9 @@ export default function AiIntelligenceHub({
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                 {/* Left: Simple Controls */}
-                <div className="lg:col-span-6 p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-6">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                    <h4 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <div className="lg:col-span-6 p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-6">
+                  <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                    <h4 className="text-base font-black text-[var(--text-primary)] flex items-center gap-2">
                       <Sliders size={18} className="text-blue-600" />
                       {isVi ? 'Bạn muốn thử phương án nào?' : 'Choose Assumptions'}
                     </h4>
@@ -413,7 +419,7 @@ export default function AiIntelligenceHub({
                   {/* 1. Price Adjustment */}
                   <div className="space-y-2.5">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-bold text-slate-800">{isVi ? '1. Bạn muốn tăng hay giảm giá thuê?' : '1. Price change:'}</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">{isVi ? '1. Bạn muốn tăng hay giảm giá thuê?' : '1. Price change:'}</span>
                       <span className="text-base font-black px-3 py-1 rounded-xl bg-blue-100 text-blue-800">
                         {rentPriceChange > 0 ? `Tăng +${rentPriceChange}%` : rentPriceChange === 0 ? 'Giữ nguyên giá' : `Giảm ${rentPriceChange}%`}
                       </span>
@@ -425,9 +431,10 @@ export default function AiIntelligenceHub({
                       step="2.5"
                       value={rentPriceChange}
                       onChange={e => setRentPriceChange(Number(e.target.value))}
-                      className="w-full h-3 bg-slate-200 rounded-lg accent-blue-600 cursor-pointer"
+                      className="w-full h-3 rounded-lg cursor-pointer"
+                      style={{ background: 'var(--border)', accentColor: 'var(--brand)' }}
                     />
-                    <div className="flex justify-between text-xs text-slate-500 font-medium">
+                    <div className="flex justify-between text-xs text-[var(--text-muted)] font-medium">
                       <span>Giảm 15% (Đại hạ giá)</span>
                       <span>Giữ nguyên</span>
                       <span>Tăng 30% (Tăng mạnh)</span>
@@ -437,7 +444,7 @@ export default function AiIntelligenceHub({
                   {/* 2. Occupancy Slider */}
                   <div className="space-y-2.5">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-bold text-slate-800">{isVi ? '2. Số phòng có khách ở kỳ vọng:' : '2. Target Occupancy:'}</span>
+                      <span className="text-sm font-bold text-[var(--text-primary)]">{isVi ? '2. Số phòng có khách ở kỳ vọng:' : '2. Target Occupancy:'}</span>
                       <span className="text-base font-black px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800">
                         {simResults.newOccupiedRooms} / 18 phòng ({targetOccupancy}%)
                       </span>
@@ -449,9 +456,10 @@ export default function AiIntelligenceHub({
                       step="5"
                       value={targetOccupancy}
                       onChange={e => setTargetOccupancy(Number(e.target.value))}
-                      className="w-full h-3 bg-slate-200 rounded-lg accent-emerald-600 cursor-pointer"
+                      className="w-full h-3 rounded-lg cursor-pointer"
+                      style={{ background: 'var(--border)', accentColor: 'var(--success)' }}
                     />
-                    <div className="flex justify-between text-xs text-slate-500 font-medium">
+                    <div className="flex justify-between text-xs text-[var(--text-muted)] font-medium">
                       <span>50% (Trống 1 nửa)</span>
                       <span>Hiện tại (72%)</span>
                       <span>100% (Thuê kín phòng)</span>
@@ -460,7 +468,7 @@ export default function AiIntelligenceHub({
 
                   {/* 3. Marketing Ads */}
                   <div className="space-y-2.5">
-                    <label className="text-sm font-bold text-slate-800 block">
+                    <label className="text-sm font-bold text-[var(--text-primary)] block">
                       {isVi ? '3. Chi tiền tìm khách / đăng tin quảng cáo:' : '3. Ad spend:'}
                     </label>
                     <div className="grid grid-cols-3 gap-2.5">
@@ -476,7 +484,7 @@ export default function AiIntelligenceHub({
                           className={`py-3 px-2 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer ${
                             marketingBudget === item.val
                               ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                              : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'
+                              : 'bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:border-blue-400'
                           }`}
                         >
                           {item.label}
@@ -487,7 +495,7 @@ export default function AiIntelligenceHub({
 
                   {/* 4. Renovation */}
                   <div className="space-y-2.5">
-                    <label className="text-sm font-bold text-slate-800 block">
+                    <label className="text-sm font-bold text-[var(--text-primary)] block">
                       {isVi ? '4. Tiền bỏ ra sửa chữa / nâng cấp nội thất:' : '4. Renovation:'}
                     </label>
                     <div className="grid grid-cols-3 gap-2.5">
@@ -503,7 +511,7 @@ export default function AiIntelligenceHub({
                           className={`py-3 px-2 rounded-xl text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer ${
                             renovationCost === item.val
                               ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                              : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400'
+                              : 'bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:border-blue-400'
                           }`}
                         >
                           {item.label}
@@ -523,7 +531,7 @@ export default function AiIntelligenceHub({
                     <p className="text-3xl sm:text-4xl font-black text-emerald-700">
                       {fmtMoney(simResults.projectedNetProfit)}
                     </p>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-emerald-300 text-sm font-extrabold text-emerald-800">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--surface)] border border-emerald-300 text-sm font-extrabold text-emerald-800">
                       {simResults.profitGrowthPercent >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                       <span>
                         {simResults.profitGrowthPercent >= 0
@@ -534,14 +542,14 @@ export default function AiIntelligenceHub({
                   </div>
 
                   {/* Comparisons */}
-                  <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-3 text-sm">
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                      <span className="text-slate-600">{isVi ? 'Tổng tiền thu vào dự kiến:' : 'Projected revenue:'}</span>
-                      <strong className="text-base text-slate-900">{fmtMoney(simResults.projectedRevenue)}</strong>
+                  <div className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] space-y-3 text-sm">
+                    <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
+                      <span className="text-[var(--text-secondary)]">{isVi ? 'Tổng tiền thu vào dự kiến:' : 'Projected revenue:'}</span>
+                      <strong className="text-base text-[var(--text-primary)]">{fmtMoney(simResults.projectedRevenue)}</strong>
                     </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                      <span className="text-slate-600">{isVi ? 'Chi phí vận hành & đăng tin:' : 'Projected expense:'}</span>
-                      <strong className="text-base text-slate-900">{fmtMoney(simResults.projectedExpense)}</strong>
+                    <div className="flex justify-between items-center pb-2 border-b border-[var(--border)]">
+                      <span className="text-[var(--text-secondary)]">{isVi ? 'Chi phí vận hành & đăng tin:' : 'Projected expense:'}</span>
+                      <strong className="text-base text-[var(--text-primary)]">{fmtMoney(simResults.projectedExpense)}</strong>
                     </div>
                     {renovationCost > 0 && (
                       <div className="flex justify-between items-center pt-1 text-blue-900">
@@ -555,7 +563,7 @@ export default function AiIntelligenceHub({
 
                   {/* Verdict Box */}
                   <div
-                    className="p-5 rounded-2xl border-2 flex items-start gap-3.5 bg-white shadow-sm"
+                    className="p-5 rounded-2xl border-2 flex items-start gap-3.5 bg-[var(--surface)] shadow-sm"
                     style={{ borderColor: simResults.verdictColor }}
                   >
                     <div
@@ -565,10 +573,10 @@ export default function AiIntelligenceHub({
                       <Sparkles size={20} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
                         {isVi ? 'ĐÁNH GIÁ CỦA AI HOLOKA:' : 'AI VERDICT:'}
                       </p>
-                      <p className="text-base font-extrabold text-slate-900 mt-0.5 leading-snug">
+                      <p className="text-base font-extrabold text-[var(--text-primary)] mt-0.5 leading-snug">
                         {simResults.verdict}
                       </p>
                     </div>
@@ -592,8 +600,8 @@ export default function AiIntelligenceHub({
                   return (
                     <div
                       key={act.id}
-                      className={`p-6 rounded-2xl border-2 transition-all bg-white ${
-                        isDone ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 hover:border-slate-300 shadow-sm'
+                      className={`p-6 rounded-2xl border-2 transition-all bg-[var(--surface)] ${
+                        isDone ? 'border-emerald-400 bg-emerald-50/30' : 'border-[var(--border)] hover:border-[var(--border-strong)] shadow-sm'
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
@@ -604,7 +612,7 @@ export default function AiIntelligenceHub({
                           >
                             {act.priorityBadge}
                           </span>
-                          <h4 className="text-lg font-black text-slate-900">
+                          <h4 className="text-lg font-black text-[var(--text-primary)]">
                             {act.title}
                           </h4>
                         </div>
@@ -614,11 +622,11 @@ export default function AiIntelligenceHub({
                         </span>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm space-y-1 mb-4">
-                        <p className="text-slate-800">
+                      <div className="p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border)] text-sm space-y-1 mb-4">
+                        <p className="text-[var(--text-primary)]">
                           <strong>⚠️ Lý do cần làm gấp:</strong> {act.reason}
                         </p>
-                        <p className="text-slate-600">
+                        <p className="text-[var(--text-secondary)]">
                           <strong>👤 Người làm:</strong> {act.who}
                         </p>
                       </div>
@@ -657,7 +665,7 @@ export default function AiIntelligenceHub({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-between text-sm text-slate-600">
+        <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--surface)] flex items-center justify-between text-sm text-[var(--text-secondary)]">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="font-medium">
@@ -669,7 +677,7 @@ export default function AiIntelligenceHub({
 
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold transition-colors cursor-pointer text-sm"
+            className="btn btn-secondary"
           >
             {isVi ? 'Đóng cửa sổ' : 'Close'}
           </button>

@@ -16,6 +16,7 @@ public final class AuthDtos {
     public record ChangePasswordRequest(
         @Schema(accessMode = Schema.AccessMode.WRITE_ONLY) @NotBlank @Size(max = 72) String currentPassword,
         @Schema(accessMode = Schema.AccessMode.WRITE_ONLY) @NotBlank @Size(min = 12, max = 72) String newPassword) {}
+    public record UpdateProfileRequest(@NotBlank @Size(max = 160) String fullName) {}
     public record WorkspaceView(long id, String name, String role) {}
     public record UserView(long id, String fullName, String email, boolean platformAdmin, List<WorkspaceView> workspaces) {}
     public record AuthResponse(String accessToken, String tokenType, long expiresIn, UserView user) {}

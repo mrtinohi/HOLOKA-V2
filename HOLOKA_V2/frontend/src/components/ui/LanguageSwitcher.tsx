@@ -1,62 +1,49 @@
 import React from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage, type Language } from '../../contexts/LanguageContext';
 
 interface LanguageSwitcherProps {
   variant?: 'pill' | 'compact';
   className?: string;
+  /** Retained for backwards compatibility; the switcher uses design tokens. */
   theme?: 'dark' | 'light' | 'auto';
 }
 
-export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
-  className = '',
-  theme = 'auto',
-}) => {
+const LANGUAGES: { id: Language; label: string; title: string }[] = [
+  { id: 'vi', label: 'VI', title: 'Tiếng Việt' },
+  { id: 'en', label: 'EN', title: 'English' },
+];
+
+export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '' }) => {
   const { language, setLanguage } = useLanguage();
-  const { resolvedTheme } = useTheme();
-  const isDark = theme === 'auto' ? resolvedTheme === 'dark' : theme === 'dark';
 
   return (
     <div
-      className={`inline-flex items-center p-0.5 rounded-xl border transition-all duration-200 select-none ${
-        isDark
-          ? 'bg-slate-900 border-slate-800'
-          : 'bg-slate-100 border-slate-200/80'
-      } ${className}`}
+      role="group"
+      aria-label="Chọn ngôn ngữ"
+      className={`inline-flex items-center gap-0.5 p-0.5 rounded-xl ${className}`}
+      style={{ background: 'var(--surface-subtle)', border: '1px solid var(--border)' }}
     >
-      <button
-        id="btn-lang-vi"
-        type="button"
-        onClick={() => setLanguage('vi')}
-        className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
-          language === 'vi'
-            ? isDark
-              ? 'bg-indigo-600 text-white shadow-xs font-bold'
-              : 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
-            : isDark
-              ? 'text-slate-400 hover:text-white'
-              : 'text-slate-500 hover:text-slate-900'
-        }`}
-      >
-        VI
-      </button>
-
-      <button
-        id="btn-lang-en"
-        type="button"
-        onClick={() => setLanguage('en')}
-        className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
-          language === 'en'
-            ? isDark
-              ? 'bg-indigo-600 text-white shadow-xs font-bold'
-              : 'bg-white text-indigo-700 shadow-xs border border-slate-200/80 font-bold'
-            : isDark
-              ? 'text-slate-400 hover:text-white'
-              : 'text-slate-500 hover:text-slate-900'
-        }`}
-      >
-        EN
-      </button>
+      {LANGUAGES.map(({ id, label, title }) => {
+        const active = language === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setLanguage(id)}
+            title={title}
+            lang={id}
+            aria-pressed={active}
+            className="px-2 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer"
+            style={
+              active
+                ? { background: 'var(--surface)', color: 'var(--brand-text)', boxShadow: 'var(--shadow-sm)' }
+                : { color: 'var(--text-muted)' }
+            }
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 };

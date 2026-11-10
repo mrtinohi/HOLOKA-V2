@@ -81,6 +81,15 @@ public class AuthService {
     }
 
     @Transactional
+    public UserView updateProfile(AuthPrincipal principal, UpdateProfileRequest request) {
+        var user = users.lockById(principal.userId()).orElseThrow(() -> unauthorized("Account unavailable"));
+        validSession(principal);
+        user.updateProfile(request.fullName());
+        record(null, user.getId(), "PROFILE_UPDATE", "User updated profile name");
+        return view(user);
+    }
+
+    @Transactional
     public void changePassword(AuthPrincipal principal, ChangePasswordRequest request) {
         validatePasswordBytes(request.currentPassword()); validatePasswordBytes(request.newPassword());
         var user = users.lockById(principal.userId()).orElseThrow(() -> unauthorized("Account unavailable"));

@@ -1,37 +1,30 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  DoorOpen, CreditCard,
-  AlertTriangle, Plus,
-  ArrowRight, Building2,
-  Wrench, Wallet, TrendingUp, TrendingDown,
-  CheckCircle2, Users, BookOpen, PhoneCall,
-  ArrowUpRight, ArrowDownRight, Layers
+  DoorOpen, AlertTriangle, Plus, ArrowRight, Building2, Wallet, TrendingUp,
 } from 'lucide-react';
 import {
-  getDashboardOverview,
-  getDashboardCharts,
-  type OverviewData,
-  type ChartsData
+  getDashboardOverview, getDashboardCharts,
+  type OverviewData, type ChartsData,
 } from '../services/dashboardService';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import AiIntelligenceHub from '../components/ui/AiIntelligenceHub';
+import StatCard from '../components/ui/StatCard';
 
-/* ─── Skeleton Loading ─── */
+const money = (n: number, isVi: boolean) =>
+  n > 0 ? (isVi ? `${(n / 1_000_000).toFixed(1)} tr` : `${(n / 1_000_000).toFixed(1)}M ₫`) : (isVi ? '0 đ' : '0 ₫');
+
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="skeleton h-12 w-80 rounded-xl" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[0, 1, 2, 3].map(i => (
-          <div key={i} className="skeleton h-32 rounded-2xl" />
-        ))}
+    <div className="space-y-6" role="status" aria-label="Loading dashboard">
+      <div className="skeleton h-8 w-72" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {[0, 1, 2, 3].map(i => <div key={i} className="skeleton h-32 rounded-2xl" />)}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {[0, 1, 2].map(i => (
-          <div key={i} className="skeleton h-64 rounded-2xl" />
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 skeleton h-80 rounded-2xl" />
+        <div className="lg:col-span-5 skeleton h-80 rounded-2xl" />
       </div>
     </div>
   );
@@ -40,6 +33,7 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   const { user } = useAuth();
   const { language } = useLanguage();
+  const isVi = language === 'vi';
   const [data, setData] = useState<OverviewData | null>(null);
   const [charts, setCharts] = useState<ChartsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,11 +42,10 @@ export default function DashboardPage() {
   const [aiHubTab, setAiHubTab] = useState<'leakage' | 'simulator' | 'priority'>('leakage');
 
   const workspaceId = user?.workspaces?.[0]?.id ?? 1;
-  const isVi = language === 'vi';
 
   useEffect(() => {
-    const handleOpenHub = (e: any) => {
-      setAiHubTab(e.detail?.tab || 'leakage');
+    const handleOpenHub = (e: Event) => {
+      setAiHubTab((e as CustomEvent).detail?.tab || 'leakage');
       setShowAiHub(true);
     };
     window.addEventListener('open-ai-hub', handleOpenHub);
@@ -60,30 +53,40 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError('');
     Promise.all([
       getDashboardOverview(workspaceId),
-      getDashboardCharts(workspaceId).catch(() => null)
+      getDashboardCharts(workspaceId).catch(() => null),
     ])
       .then(([overview, chartsData]) => {
+        if (!active) return;
         setData(overview);
         setCharts(chartsData);
       })
-      .catch(err => {
-        console.error(err);
-        setError('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
+      .catch(() => {
+        if (!active) return;
+        setError(isVi ? 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.' : 'Failed to connect to server. Please try again.');
       })
-      .finally(() => setLoading(false));
-  }, [workspaceId]);
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [workspaceId, isVi]);
 
   if (loading) return <DashboardSkeleton />;
 
   if (error) {
     return (
-      <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-center gap-4">
-        <AlertTriangle size={32} className="text-rose-600 flex-shrink-0" />
+      <div
+        className="flex items-start gap-4 rounded-2xl p-5"
+        style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)' }}
+      >
+        <AlertTriangle size={22} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--danger)' }} />
         <div>
-          <p className="font-bold text-lg">Đã xảy ra sự cố</p>
-          <p className="text-sm text-rose-700 mt-1">{error}</p>
+          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {isVi ? 'Đã xảy ra sự cố' : 'An error occurred'}
+          </p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{error}</p>
         </div>
       </div>
     );
@@ -106,315 +109,263 @@ export default function DashboardPage() {
   const netProfit = (data.monthlyRevenue || 0) - (data.monthlyExpense || 0);
   const totalBilled = (data.monthlyRevenue || 0) + (data.outstandingPayments || 0);
   const collectedPct = totalBilled > 0 ? Math.round(((data.monthlyRevenue || 0) / totalBilled) * 100) : 100;
+  const today = new Date().toLocaleDateString(isVi ? 'vi-VN' : 'en-US', {
+    weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric',
+  });
 
   return (
-    <div className="space-y-6 text-slate-800 dark:text-slate-100 font-sans text-left pb-12">
-
-      {/* ─── 1. Header Trang: Chuyên nghiệp, Tự nhiên, Tinh tế ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+    <div className="space-y-6 pb-10">
+      {/* ─── Page header ─── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            {greeting}, <span className="text-blue-600 dark:text-blue-400">{user?.fullName || 'Quản lý'}</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            {greeting}, <span style={{ color: 'var(--brand-text)' }}>{user?.fullName || (isVi ? 'Quản lý' : 'Manager')}</span>
           </h1>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-            <span>Hệ thống: <strong className="text-slate-800 dark:text-slate-200">{user?.workspaces?.[0]?.name ?? 'An Nhiên Living'}</strong></span>
-            <span>•</span>
-            <span>{new Date().toLocaleDateString(isVi ? 'vi-VN' : 'en-US', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+          <p className="text-sm mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1" style={{ color: 'var(--text-muted)' }}>
+            <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+              {user?.workspaces?.[0]?.name ?? 'An Nhiên Living'}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>{today}</span>
           </p>
         </div>
 
-        {/* Nút hành động chính */}
-        <div className="flex items-center gap-3">
-          <NavLink
-            to="/properties"
-            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer"
-          >
-            <Plus size={18} />
-            <span>Thêm phòng / tòa nhà</span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <NavLink to="/properties" className="btn btn-primary">
+            <Plus size={16} />
+            <span>{isVi ? 'Thêm tài sản' : 'Add Property'}</span>
           </NavLink>
-          <NavLink
-            to="/finance"
-            className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm border border-slate-200 dark:border-slate-700 transition-colors"
-          >
-            Lập hóa đơn
+          <NavLink to="/finance" className="btn btn-secondary">
+            {isVi ? 'Lập hóa đơn' : 'Create Invoice'}
           </NavLink>
         </div>
       </div>
 
-      {/* ─── 2. Hàng Thẻ Chỉ Số Cốt Lõi (4 KPI Thẻ Tối Giản, Sạch Sẽ) ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        {/* KPI 1: Tỷ lệ lấp đầy */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Tỷ lệ phòng có khách
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 flex items-center justify-center">
-              <DoorOpen size={18} />
-            </div>
-          </div>
-          <div className="my-3">
-            <p className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-              {data.occupancyRate || 72}%
-            </p>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
-              <strong className="text-emerald-600 dark:text-emerald-400">{data.occupiedRooms || 13}</strong> / {data.totalRooms || 18} phòng có khách ({data.availableRooms || 4} trống)
-            </p>
-          </div>
-          <NavLink to="/rooms" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-            <span>Quản lý phòng</span>
-            <ArrowRight size={13} />
-          </NavLink>
-        </div>
+      {/* ─── KPI row ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard
+          title={isVi ? 'Tỷ lệ lấp đầy' : 'Occupancy Rate'}
+          value={`${Math.round(data.occupancyRate || 0)}%`}
+          icon={DoorOpen}
+          tone="brand"
+          hint={`${data.occupiedRooms || 0}/${data.totalRooms || 0} ${isVi ? 'phòng có khách · ' : 'occupied · '}${data.availableRooms || 0} ${isVi ? 'trống' : 'vacant'}`}
+          footer={
+            <NavLink to="/rooms" className="text-xs font-semibold inline-flex items-center gap-1" style={{ color: 'var(--brand-text)' }}>
+              {isVi ? 'Quản lý phòng' : 'Manage rooms'} <ArrowRight size={12} />
+            </NavLink>
+          }
+        />
 
-        {/* KPI 2: Tiền phòng đã thu */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Tiền phòng đã thu
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center">
-              <TrendingUp size={18} />
-            </div>
-          </div>
-          <div className="my-3">
-            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
-              {data.monthlyRevenue > 0 ? `${(data.monthlyRevenue / 1_000_000).toFixed(1)} tr` : '0 đ'}
-            </p>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
-              Đạt {collectedPct}% tổng số tiền cần thu kỳ này
-            </p>
-          </div>
-          <NavLink to="/finance" className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
-            <span>Sổ thu tiền</span>
-            <ArrowRight size={13} />
-          </NavLink>
-        </div>
+        <StatCard
+          title={isVi ? 'Tiền phòng đã thu' : 'Collected Rent'}
+          value={money(data.monthlyRevenue, isVi)}
+          icon={TrendingUp}
+          tone="success"
+          hint={isVi ? `Đạt ${collectedPct}% tổng phải thu kỳ này` : `${collectedPct}% of expected collected`}
+          footer={
+            <NavLink to="/finance" className="text-xs font-semibold inline-flex items-center gap-1" style={{ color: 'var(--success)' }}>
+              {isVi ? 'Sổ thu tiền' : 'Cashbook'} <ArrowRight size={12} />
+            </NavLink>
+          }
+        />
 
-        {/* KPI 3: Tiền nợ còn lại */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
-              Tiền nợ chưa thu
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-300 flex items-center justify-center">
-              <AlertTriangle size={18} />
-            </div>
-          </div>
-          <div className="my-3">
-            <p className="text-3xl font-bold text-rose-600 dark:text-rose-400 tracking-tight">
-              {data.outstandingPayments > 0 ? `${(data.outstandingPayments / 1_000_000).toFixed(1)} tr` : '0 đ'}
-            </p>
-            <p className="text-xs font-medium text-rose-700 dark:text-rose-400 mt-1">
-              3 khách đang chậm đóng tiền phòng
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => openAiWithTab('priority')}
-            className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 text-left cursor-pointer"
-          >
-            <span>Nhắc nợ khách</span>
-            <ArrowRight size={13} />
-          </button>
-        </div>
-
-        {/* KPI 4: Lợi nhuận tạm tính */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Lợi nhuận ước tính
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 flex items-center justify-center">
-              <Wallet size={18} />
-            </div>
-          </div>
-          <div className="my-3">
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">
-              {netProfit > 0 ? `${(netProfit / 1_000_000).toFixed(1)} tr` : '0 đ'}
-            </p>
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">
-              Sau khi trừ {(data.monthlyExpense / 1_000_000).toFixed(1)} tr chi phí sửa & điện nước
-            </p>
-          </div>
-          <NavLink to="/reports" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-            <span>Báo cáo lời / lỗ</span>
-            <ArrowRight size={13} />
-          </NavLink>
-        </div>
-
-      </div>
-
-      {/* ─── 3. Hai Cột Chính: Việc Gấp & Trạng Thái Khu Nhà ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* Cột Trái (7 phần): Việc cần xử lý hôm nay */}
-        <div className="lg:col-span-7 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 flex items-center justify-center">
-                <AlertTriangle size={18} />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                  Việc cần xử lý hôm nay
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Các khoản nợ và hợp đồng cần chú ý
-                </p>
-              </div>
-            </div>
-
+        <StatCard
+          title={isVi ? 'Tiền nợ chưa thu' : 'Overdue Rent'}
+          value={money(data.outstandingPayments, isVi)}
+          icon={AlertTriangle}
+          tone={data.outstandingPayments > 0 ? 'danger' : 'neutral'}
+          hint={data.outstandingPayments > 0
+            ? (isVi ? 'Cần liên hệ nhắc khách thanh toán' : 'Tenants need payment reminder')
+            : (isVi ? 'Không có khoản nợ tồn đọng' : 'No overdue payments')}
+          footer={
             <button
               type="button"
               onClick={() => openAiWithTab('priority')}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              className="text-xs font-semibold inline-flex items-center gap-1 cursor-pointer"
+              style={{ color: data.outstandingPayments > 0 ? 'var(--danger)' : 'var(--text-muted)' }}
             >
-              Xem tất cả →
+              {isVi ? 'Nhắc nợ khách' : 'Remind tenants'} <ArrowRight size={12} />
+            </button>
+          }
+        />
+
+        <StatCard
+          title={isVi ? 'Lợi nhuận ước tính' : 'Estimated Profit'}
+          value={money(netProfit, isVi)}
+          icon={Wallet}
+          tone={netProfit > 0 ? 'brand' : 'danger'}
+          hint={isVi
+            ? `Sau khi trừ ${(data.monthlyExpense / 1_000_000).toFixed(1)} tr chi phí`
+            : `After ${(data.monthlyExpense / 1_000_000).toFixed(1)}M expenses`}
+          footer={
+            <NavLink to="/reports" className="text-xs font-semibold inline-flex items-center gap-1" style={{ color: 'var(--brand-text)' }}>
+              {isVi ? 'Báo cáo lời / lỗ' : 'P&L Report'} <ArrowRight size={12} />
+            </NavLink>
+          }
+        />
+      </div>
+
+      {/* ─── Main two-column ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Action queue */}
+        <section className="lg:col-span-7 card p-5">
+          <div className="flex items-center justify-between gap-3 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'var(--warning-soft)', border: '1px solid var(--warning-border)', color: 'var(--warning)' }}
+              >
+                <AlertTriangle size={16} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="section-title">
+                  {isVi ? 'Việc cần xử lý hôm nay' : 'Action Items Today'}
+                </h2>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  {isVi ? 'Các khoản nợ và hợp đồng cần chú ý' : 'Overdue invoices and contracts needing attention'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => openAiWithTab('priority')}
+              className="text-xs font-semibold shrink-0 cursor-pointer"
+              style={{ color: 'var(--brand-text)' }}
+            >
+              {isVi ? 'Xem tất cả' : 'View all'}
             </button>
           </div>
 
-          <div className="space-y-3">
-            {/* Task 1 */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-                    Nợ quá hạn
-                  </span>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    Thu tiền phòng P.102 (chị Trần Thị Thu Trang)
-                  </p>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Số tiền: <strong className="text-rose-600 dark:text-rose-400">8.520.000 đ</strong> • Quá hạn 11 ngày
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => openAiWithTab('priority')}
-                className="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex-shrink-0 cursor-pointer shadow-xs transition-colors"
+          <div className="mt-4 space-y-2.5">
+            {[
+              {
+                tag: isVi ? 'Nợ quá hạn' : 'Overdue',
+                tone: 'danger' as const,
+                title: isVi ? 'Thu tiền phòng P.102 (chị Trần Thị Thu Trang)' : 'Collect rent Room 102 (Ms. Tran Thi Thu Trang)',
+                meta: isVi
+                  ? <>Số tiền: <strong style={{ color: 'var(--danger)' }}>8.520.000 đ</strong> · Quá hạn 11 ngày</>
+                  : <>Amount: <strong style={{ color: 'var(--danger)' }}>8,520,000 ₫</strong> · Overdue 11 days</>,
+                label: isVi ? 'Gửi nhắc nợ' : 'Send Reminder',
+                to: undefined,
+                onClick: () => openAiWithTab('priority'),
+              },
+              {
+                tag: isVi ? 'Sắp hết hạn' : 'Expiring soon',
+                tone: 'warning' as const,
+                title: isVi ? 'Gia hạn hợp đồng phòng P.101 & P.201' : 'Renew lease Room 101 & 201',
+                meta: isVi
+                  ? <>Hết hạn trong 17 và 25 ngày tới · 16 triệu đ tiền thuê</>
+                  : <>Expires in 17 & 25 days · 16M ₫ monthly rent</>,
+                label: isVi ? 'Hỏi gia hạn' : 'Ask Renewal',
+                to: '/contracts',
+                onClick: undefined,
+              },
+              {
+                tag: isVi ? 'Báo hỏng' : 'Issue reported',
+                tone: 'neutral' as const,
+                title: isVi ? 'Rò rỉ nước bồn rửa chén phòng 302' : 'Kitchen sink leak Room 302',
+                meta: isVi
+                  ? <>Chưa phân công thợ · Ước tính 450.000 đ</>
+                  : <>Unassigned technician · Est. 450,000 ₫</>,
+                label: isVi ? 'Giao thợ sửa' : 'Assign Repair',
+                to: '/maintenance',
+                onClick: undefined,
+              },
+            ].map(item => (
+              <div
+                key={item.title}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl"
+                style={{ background: 'var(--surface-subtle)', border: '1px solid var(--border)' }}
               >
-                Gửi nhắc nợ
-              </button>
-            </div>
-
-            {/* Task 2 */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                    Sắp hết hạn
-                  </span>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    Gia hạn hợp đồng phòng P.101 & P.201
-                  </p>
+                <div className="min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`badge badge-${item.tone}`}>{item.tag}</span>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{item.title}</p>
+                  </div>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.meta}</p>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Hết hạn trong 17 và 25 ngày tới • Liên quan 16 triệu đ tiền thuê
-                </p>
+
+                {item.to ? (
+                  <NavLink to={item.to} className="btn btn-secondary shrink-0">{item.label}</NavLink>
+                ) : (
+                  <button type="button" onClick={item.onClick} className="btn btn-primary shrink-0">
+                    {item.label}
+                  </button>
+                )}
               </div>
-
-              <NavLink
-                to="/contracts"
-                className="px-3.5 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-semibold text-xs flex-shrink-0 text-center transition-colors"
-              >
-                Hỏi gia hạn
-              </NavLink>
-            </div>
-
-            {/* Task 3 */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
-                    Báo hỏng
-                  </span>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    Rò rỉ nước bồn rửa chén phòng 302
-                  </p>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Chưa phân công thợ sửa • Ước tính khoảng 450.000 đ
-                </p>
-              </div>
-
-              <NavLink
-                to="/maintenance"
-                className="px-3.5 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-semibold text-xs flex-shrink-0 text-center transition-colors"
-              >
-                Giao thợ sửa
-              </NavLink>
-            </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Cột Phải (5 phần): Tỷ lệ lấp đầy theo tòa nhà */}
-        <div className="lg:col-span-5 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 flex items-center justify-center">
-                <Building2 size={18} />
+        {/* Occupancy by property */}
+        <section className="lg:col-span-5 card p-5">
+          <div className="flex items-center justify-between gap-3 pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-200)', color: 'var(--brand-text)' }}
+              >
+                <Building2 size={16} />
               </div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                Tỷ lệ lấp đầy theo khu
+              <h2 className="section-title truncate">
+                {isVi ? 'Tỷ lệ lấp đầy theo khu' : 'Occupancy by Property'}
               </h2>
             </div>
-
-            <NavLink to="/properties" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-              Chi tiết →
+            <NavLink to="/properties" className="text-xs font-semibold shrink-0" style={{ color: 'var(--brand-text)' }}>
+              {isVi ? 'Chi tiết' : 'Details'}
             </NavLink>
           </div>
 
-          <div className="space-y-3.5">
-            {charts?.occupancy && charts.occupancy.length > 0 ? (
-              charts.occupancy.map((prop) => {
-                const rate = prop.totalRooms > 0 ? Math.round((prop.occupiedRooms / prop.totalRooms) * 100) : 0;
-                return (
-                  <div key={prop.propertyId} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px]">
-                        {prop.name}
-                      </span>
-                      <span className="font-bold text-blue-700 dark:text-blue-300 text-xs">
-                        {rate}%
-                      </span>
-                    </div>
-
-                    {/* Progress */}
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
-                      <div className="bg-blue-600 h-full transition-all" style={{ width: `${rate}%` }} />
-                      <div className="bg-amber-400 h-full transition-all" style={{ width: `${100 - rate}%` }} />
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                      <span>{prop.occupiedRooms} có khách</span>
-                      <span>{prop.availableRooms} phòng trống</span>
-                    </div>
+          <div className="mt-4 space-y-3">
+            {charts?.occupancy?.length ? charts.occupancy.map(prop => {
+              const rate = prop.totalRooms > 0
+                ? Math.round((prop.occupiedRooms / prop.totalRooms) * 100)
+                : 0;
+              return (
+                <div
+                  key={prop.propertyId}
+                  className="p-3.5 rounded-xl space-y-2"
+                  style={{ background: 'var(--surface-subtle)', border: '1px solid var(--border)' }}
+                >
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <span className="font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{prop.name}</span>
+                    <span className="font-bold tabular-nums shrink-0" style={{ color: 'var(--brand-text)' }}>{rate}%</span>
                   </div>
-                );
-              })
-            ) : (
-              <div className="py-8 text-center text-xs text-slate-400">
-                Đang tải dữ liệu tòa nhà...
-              </div>
+
+                  <div
+                    className="w-full h-2 rounded-full overflow-hidden flex"
+                    role="progressbar"
+                    aria-valuenow={rate}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Occupancy ${prop.name}`}
+                    style={{ background: 'var(--border)' }}
+                  >
+                    <div className="h-full transition-all" style={{ width: `${rate}%`, background: 'var(--brand)' }} />
+                    <div className="h-full transition-all" style={{ width: `${100 - rate}%`, background: 'var(--warning)' }} />
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <span>{prop.occupiedRooms} {isVi ? 'có khách' : 'occupied'}</span>
+                    <span>{prop.availableRooms} {isVi ? 'trống' : 'vacant'}</span>
+                  </div>
+                </div>
+              );
+            }) : (
+              <p className="py-8 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+                {isVi ? 'Chưa có dữ liệu tòa nhà.' : 'No property data available.'}
+              </p>
             )}
           </div>
-        </div>
-
+        </section>
       </div>
 
-      {/* ─── Modal Trợ Lý AI ─── */}
       <AiIntelligenceHub
         isOpen={showAiHub}
         onClose={() => setShowAiHub(false)}
         overview={data}
         initialTab={aiHubTab}
       />
-
     </div>
   );
 }
-

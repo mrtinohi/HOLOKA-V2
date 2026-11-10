@@ -1,33 +1,43 @@
-import { Brain, TrendingUp, AlertTriangle, Lightbulb, Building2 } from 'lucide-react';
+import { Brain, TrendingUp, AlertTriangle, Lightbulb, Building2, ArrowUpRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getDashboardOverview, getDashboardCharts } from '../services/dashboardService';
-import type { OverviewData } from '../services/dashboardService';
-import { getProperties } from '../services/propertyService';
-import type { Property } from '../services/propertyService';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getDashboardOverview, getDashboardCharts, type OverviewData } from '../services/dashboardService';
+import { getProperties, type Property } from '../services/propertyService';
+import StatCard from '../components/ui/StatCard';
 
-/* ── Insight Card ─────────────────────────────────────────────────────────── */
-function InsightCard({ icon: Icon, title, message, color, bg }: {
+type Insight = {
   icon: React.ElementType;
   title: string;
   message: string;
-  color: string;
-  bg: string;
-}) {
+  tone: 'danger' | 'warning' | 'brand' | 'info';
+};
+
+const TONE: Record<Insight['tone'], { fg: string; bg: string; border: string }> = {
+  danger:  { fg: 'var(--danger)',  bg: 'var(--danger-soft)',  border: 'var(--danger-border)' },
+  warning: { fg: 'var(--warning)', bg: 'var(--warning-soft)', border: 'var(--warning-border)' },
+  brand:   { fg: 'var(--brand)',   bg: 'var(--brand-soft)',   border: 'var(--brand-200)' },
+  info:    { fg: 'var(--info)',    bg: 'var(--info-soft)',    border: 'var(--info-border)' },
+};
+
+function InsightCard({ insight }: { insight: Insight }) {
+  const tone = TONE[insight.tone];
+  const Icon = insight.icon;
   return (
     <div
-      className="fade-in rounded-2xl p-4 flex gap-4"
-      style={{ background: bg, border: `1px solid ${color}20` }}
+      className="fade-in rounded-xl p-4 flex gap-3.5"
+      style={{ background: tone.bg, border: `1px solid ${tone.border}` }}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: color + '20' }}
+        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: 'var(--surface)', color: tone.fg, border: `1px solid ${tone.border}` }}
       >
-        <Icon size={18} style={{ color }} />
+        <Icon size={17} />
       </div>
-      <div>
-        <p className="text-sm font-semibold" style={{ color: '#0f172a' }}>{title}</p>
-        <p className="text-sm mt-0.5" style={{ color: '#64748b' }}>{message}</p>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{insight.title}</p>
+        <p className="text-sm mt-0.5 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{insight.message}</p>
       </div>
     </div>
   );
@@ -35,200 +45,232 @@ function InsightCard({ icon: Icon, title, message, color, bg }: {
 
 export default function IntelligencePage() {
   const { user } = useAuth();
+  const { language } = useLanguage();
+  const isVi = language === 'vi';
   const wsId = user!.workspaces[0].id;
+
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    let active = true;
+    setLoading(true);
     Promise.all([
       getDashboardOverview(wsId),
       getProperties(wsId),
-      getDashboardCharts(wsId).catch(() => null)
+      getDashboardCharts(wsId).catch(() => null),
     ])
       .then(([ov, props, charts]) => {
+        if (!active) return;
         setOverview(ov);
         if (charts?.occupancy) {
           const occMap = new Map(charts.occupancy.map(o => [o.propertyId, o]));
-          const merged = props.map(p => {
+          setProperties(props.map(p => {
             const occ = occMap.get(p.id);
             return {
               ...p,
               totalRooms: occ ? occ.totalRooms : (p.totalRooms ?? 0),
               occupiedRooms: occ ? occ.occupiedRooms : (p.occupiedRooms ?? 0),
             };
-          });
-          setProperties(merged);
+          }));
         } else {
           setProperties(props);
         }
       })
-      .finally(() => setLoading(false));
-  }, [wsId]);
+      .catch(() => { if (active) setError(isVi ? 'Không tải được dữ liệu phân tích.' : 'Failed to load intelligence data.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [wsId, isVi]);
 
-  // Generate insights from real data
-  const insights = overview ? [
-    overview.occupancyRate < 80 && {
-      icon: AlertTriangle,
-      title: 'Tỷ lệ lấp đầy thấp',
-      message: `Workspace đang có tỷ lệ lấp đầy ${overview.occupancyRate.toFixed(1)}%, dưới mức lý tưởng 80%. Có ${overview.availableRooms} phòng trống cần xử lý.`,
-      color: '#f59e0b',
-      bg: '#fffbeb',
-    },
-    overview.openMaintenance > 0 && {
-      icon: AlertTriangle,
-      title: `${overview.openMaintenance} yêu cầu bảo trì chưa xử lý`,
-      message: 'Các yêu cầu bảo trì tồn đọng có thể ảnh hưởng đến trải nghiệm của khách thuê.',
-      color: '#f43f5e',
-      bg: '#fef2f2',
-    },
-    overview.contractsExpiringSoon > 0 && {
-      icon: AlertTriangle,
-      title: `${overview.contractsExpiringSoon} hợp đồng sắp hết hạn`,
-      message: 'Cần liên hệ khách thuê để gia hạn hợp đồng, tránh để phòng bị trống.',
-      color: '#6366f1',
-      bg: '#f5f3ff',
-    },
-    overview.pendingTasks > 0 && {
-      icon: Lightbulb,
-      title: `${overview.pendingTasks} công việc đang chờ xử lý`,
-      message: 'Phân công và ưu tiên xử lý các task để đảm bảo vận hành hiệu quả.',
-      color: '#0284c7',
-      bg: '#f0f9ff',
-    },
-  ].filter(Boolean) : [];
+  const insights: Insight[] = overview
+    ? ([
+        overview.occupancyRate < 80 && {
+          icon: AlertTriangle,
+          title: isVi ? 'Tỷ lệ lấp đầy thấp' : 'Low Occupancy Rate',
+          message: isVi
+            ? `Tỷ lệ lấp đầy hiện là ${overview.occupancyRate.toFixed(1)}%, dưới mức lý tưởng 80%. Có ${overview.availableRooms} phòng trống cần xử lý.`
+            : `Occupancy rate is ${overview.occupancyRate.toFixed(1)}%, below the 80% benchmark. ${overview.availableRooms} vacant units require attention.`,
+          tone: 'warning' as const,
+        },
+        overview.openMaintenance > 0 && {
+          icon: AlertTriangle,
+          title: isVi ? `${overview.openMaintenance} yêu cầu bảo trì chưa xử lý` : `${overview.openMaintenance} Unresolved Repairs`,
+          message: isVi
+            ? 'Yêu cầu bảo trì tồn đọng có thể ảnh hưởng đến trải nghiệm khách thuê.'
+            : 'Unresolved maintenance tickets may reduce tenant satisfaction.',
+          tone: 'danger' as const,
+        },
+        overview.contractsExpiringSoon > 0 && {
+          icon: AlertTriangle,
+          title: isVi ? `${overview.contractsExpiringSoon} hợp đồng sắp hết hạn` : `${overview.contractsExpiringSoon} Expiring Leases`,
+          message: isVi
+            ? 'Liên hệ khách thuê để gia hạn, tránh để phòng trống ngoài kế hoạch.'
+            : 'Contact tenants for renewal to avoid unexpected vacancy downtime.',
+          tone: 'brand' as const,
+        },
+        overview.pendingTasks > 0 && {
+          icon: Lightbulb,
+          title: isVi ? `${overview.pendingTasks} công việc đang chờ xử lý` : `${overview.pendingTasks} Pending Tasks`,
+          message: isVi
+            ? 'Phân công và ưu tiên xử lý để đảm bảo vận hành trơn tru.'
+            : 'Assign staff checklist to maintain smooth operations.',
+          tone: 'info' as const,
+        },
+      ].filter(Boolean) as Insight[])
+    : [];
+
+  const occColor = (rate: number) =>
+    rate >= 80 ? 'var(--success)' : rate >= 60 ? 'var(--warning)' : 'var(--danger)';
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-5 pb-10">
       {/* Header */}
-      <div className="fade-in">
-        <div className="flex items-center gap-3 mb-1">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
+      <div>
+        <div className="flex items-center gap-2.5">
+          <span
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-200)', color: 'var(--brand-text)' }}
           >
-            <Brain size={20} color="white" />
-          </div>
-          <h1 className="text-2xl font-bold" style={{ color: '#0f172a' }}>Property Intelligence</h1>
+            <Brain size={18} />
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            {isVi ? 'Phân tích dự báo' : 'Operations Intelligence'}
+          </h1>
         </div>
-        <p className="mt-1 text-sm" style={{ color: '#94a3b8' }}>
-          HOLOKA phân tích dữ liệu vận hành và phát hiện các vấn đề cần chú ý.
+        <p className="text-sm mt-1.5" style={{ color: 'var(--text-muted)' }}>
+          {isVi ? 'HOLOKA phân tích dữ liệu vận hành và phát hiện các điểm cần chú ý.' : 'HOLOKA analyzes real-time operations data and detects priority bottlenecks.'}
         </p>
       </div>
 
-      {/* Overview Stats */}
+      {error && (
+        <div role="alert" className="rounded-xl px-3.5 py-2.5 text-sm" style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)' }}>
+          {error}
+        </div>
+      )}
+
+      {/* KPI */}
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-28 rounded-2xl" />)}
         </div>
-      ) : overview ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 fade-in">
-          {[
-            { label: 'Tỷ lệ lấp đầy', value: `${overview.occupancyRate.toFixed(1)}%`, color: overview.occupancyRate >= 80 ? '#10b981' : '#f59e0b', icon: TrendingUp },
-            { label: 'Phòng trống', value: overview.availableRooms, color: '#f43f5e', icon: Building2 },
-            { label: 'Bảo trì tồn đọng', value: overview.openMaintenance, color: '#f59e0b', icon: AlertTriangle },
-            { label: 'HĐ sắp hết hạn', value: overview.contractsExpiringSoon, color: '#6366f1', icon: Lightbulb },
-          ].map(s => (
-            <div key={s.label} className="card p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: s.color + '15' }}
-                >
-                  <s.icon size={17} style={{ color: s.color }} />
-                </div>
-              </div>
-              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-              <p className="text-xs mt-1 font-medium" style={{ color: '#94a3b8' }}>{s.label}</p>
-            </div>
-          ))}
+      ) : overview && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <StatCard title={isVi ? 'Tỷ lệ lấp đầy' : 'Occupancy Rate'} value={`${overview.occupancyRate.toFixed(1)}%`} icon={TrendingUp} tone={overview.occupancyRate >= 80 ? 'success' : 'warning'} />
+          <StatCard title={isVi ? 'Phòng trống' : 'Vacant Units'} value={overview.availableRooms} icon={Building2} tone={overview.availableRooms > 0 ? 'danger' : 'success'} />
+          <StatCard title={isVi ? 'Bảo trì tồn đọng' : 'Pending Repairs'} value={overview.openMaintenance} icon={AlertTriangle} tone={overview.openMaintenance > 0 ? 'warning' : 'success'} />
+          <StatCard title={isVi ? 'HĐ sắp hết hạn' : 'Expiring Leases'} value={overview.contractsExpiringSoon} icon={Lightbulb} tone="brand" />
         </div>
-      ) : null}
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Insights */}
-        <div className="space-y-4">
-          <h2 className="font-bold text-lg" style={{ color: '#0f172a' }}>🔍 Phân tích & Cảnh báo</h2>
+        <section className="space-y-3">
+          <h2 className="section-title">{isVi ? 'Phân tích & cảnh báo' : 'Insights & Alerts'}</h2>
           {loading ? (
-            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-20 rounded-2xl" />)
+            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-20 rounded-xl" />)
           ) : insights.length === 0 ? (
             <div className="card p-8 text-center">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(16,185,129,0.1)' }}>
-                <Brain size={22} style={{ color: '#10b981' }} />
-              </div>
-              <p className="font-semibold" style={{ color: '#0f172a' }}>Hệ thống đang vận hành tốt!</p>
-              <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>Không phát hiện vấn đề nào cần xử lý.</p>
+              <span
+                className="w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-3"
+                style={{ background: 'var(--success-soft)', border: '1px solid var(--success-border)', color: 'var(--success)' }}
+              >
+                <Brain size={20} />
+              </span>
+              <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {isVi ? 'Hệ thống đang vận hành tốt' : 'Operations Running Smoothly'}
+              </p>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                {isVi ? 'Không phát hiện vấn đề nào cần xử lý.' : 'No critical bottlenecks detected.'}
+              </p>
             </div>
           ) : (
-            (insights as Parameters<typeof InsightCard>[0][]).map((ins, i) => (
-              <InsightCard key={i} {...ins} />
-            ))
+            insights.map(insight => <InsightCard key={insight.title} insight={insight} />)
           )}
-        </div>
+        </section>
 
-        {/* Property Performance */}
-        <div className="space-y-4">
-          <h2 className="font-bold text-lg" style={{ color: '#0f172a' }}>📊 Hiệu suất Property</h2>
+        {/* Property performance */}
+        <section className="space-y-3">
+          <h2 className="section-title">{isVi ? 'Hiệu suất theo bất động sản' : 'Performance by Property'}</h2>
           {loading ? (
-            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-16 rounded-2xl" />)
+            Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-20 rounded-xl" />)
           ) : properties.length === 0 ? (
-            <div className="card p-6 text-center">
-              <p className="text-sm" style={{ color: '#94a3b8' }}>Chưa có property nào.</p>
+            <div className="card p-8 text-center">
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                {isVi ? 'Chưa có bất động sản nào.' : 'No property records available.'}
+              </p>
             </div>
           ) : (
-            properties.slice(0, 6).map((prop, i) => {
-              const occ = prop.totalRooms ? Math.round(((prop.occupiedRooms ?? 0) / prop.totalRooms) * 100) : 0;
+            properties.slice(0, 6).map(p => {
+              const totalRooms = p.totalRooms ?? 0;
+              const occupied = p.occupiedRooms ?? 0;
+              const occ = totalRooms ? Math.round((occupied / totalRooms) * 100) : 0;
               return (
-                <div key={prop.id} className="card p-4 fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-sm" style={{ color: '#0f172a' }}>{prop.name}</p>
-                      <p className="text-xs" style={{ color: '#94a3b8' }}>{prop.totalRooms || 0} phòng</p>
+                <div key={p.id} className="card p-4">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        {totalRooms} {isVi ? 'phòng' : 'units'}
+                      </p>
                     </div>
-                    <span
-                      className="text-sm font-bold"
-                      style={{ color: occ >= 80 ? '#10b981' : occ >= 60 ? '#f59e0b' : '#f43f5e' }}
-                    >
-                      {occ}%
-                    </span>
+                    <span className="text-sm font-bold tabular-nums" style={{ color: occColor(occ) }}>{occ}%</span>
                   </div>
-                  <div className="w-full h-1.5 rounded-full" style={{ background: '#f1f5f9' }}>
+
+                  <div
+                    className="w-full h-1.5 rounded-full overflow-hidden"
+                    style={{ background: 'var(--border)' }}
+                    role="progressbar"
+                    aria-valuenow={occ}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Tỷ lệ lấp đầy ${p.name}`}
+                  >
                     <div
-                      className="h-1.5 rounded-full transition-all"
-                      style={{
-                        width: `${occ}%`,
-                        background: occ >= 80
-                          ? 'linear-gradient(90deg,#10b981,#34d399)'
-                          : occ >= 60
-                          ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
-                          : 'linear-gradient(90deg,#f43f5e,#fb7185)',
-                      }}
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${occ}%`, background: occColor(occ) }}
                     />
                   </div>
-                  <div className="flex items-center justify-between mt-1.5 text-xs" style={{ color: '#94a3b8' }}>
-                    <span>{prop.occupiedRooms ?? 0} đang thuê</span>
-                    <span>{(prop.totalRooms ?? 0) - (prop.occupiedRooms ?? 0)} trống</span>
+
+                  <div className="flex items-center justify-between mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <span>{occupied} {isVi ? 'đang thuê' : 'occupied'}</span>
+                    <span>{totalRooms - occupied} {isVi ? 'trống' : 'vacant'}</span>
                   </div>
                 </div>
               );
             })
           )}
-        </div>
+        </section>
       </div>
 
-      {/* Coming Soon banner */}
+      {/* AI banner */}
       <div
-        className="fade-in rounded-2xl p-5 flex items-center gap-4"
-        style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.08))', border: '1px solid rgba(99,102,241,0.15)' }}
+        className="rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-200)' }}
       >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(99,102,241,0.15)' }}>
-          <Lightbulb size={18} style={{ color: '#6366f1' }} />
+        <div className="flex items-start gap-3">
+          <span
+            className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: 'var(--surface)', color: 'var(--brand-text)', border: '1px solid var(--brand-200)' }}
+          >
+            <Lightbulb size={17} />
+          </span>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--brand-text)' }}>
+              {isVi ? 'Cần kế hoạch hành động chi tiết?' : 'Need an Action Plan?'}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+              {isVi
+                ? 'Trợ lý HOLOKA AI tổng hợp số liệu và đề xuất việc cần làm theo mức ưu tiên.'
+                : 'HOLOKA AI aggregates real-time metrics and recommends prioritized daily actions.'}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="font-semibold text-sm" style={{ color: '#6366f1' }}>Đang phát triển: Phân tích nâng cao</p>
-          <p className="text-xs mt-0.5" style={{ color: '#8b5cf6' }}>Revenue trend, chi phí bất thường, vacancy heatmap sẽ ra mắt sớm.</p>
-        </div>
+        <NavLink to="/ai" className="btn btn-primary shrink-0">
+          <span>{isVi ? 'Mở trợ lý AI' : 'Open AI Assistant'}</span>
+          <ArrowUpRight size={15} />
+        </NavLink>
       </div>
     </div>
   );

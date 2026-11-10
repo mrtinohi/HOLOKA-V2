@@ -6,6 +6,7 @@ interface AuthState { isAuthenticated: boolean; isLoading: boolean; user: UserVi
 interface AuthContextType extends AuthState {
   login: (token: string, user: UserView) => void;
   logout: () => void;
+  updateUser: (user: Partial<UserView>) => void;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -17,6 +18,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setAccessToken(null);
     setState({ isAuthenticated: false, isLoading: false, user: null });
+  }, []);
+  const updateUser = useCallback((updated: Partial<UserView>) => {
+    setState(prev => prev.user ? { ...prev, user: { ...prev.user, ...updated } } : prev);
   }, []);
   useEffect(() => {
     let active = true;
@@ -36,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('auth-change', logout);
     };
   }, [login, logout]);
-  return <AuthContext.Provider value={{ ...state, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ ...state, login, logout, updateUser }}>{children}</AuthContext.Provider>;
 }
 // Kept beside its context to preserve existing imports throughout the application.
 // oxlint-disable-next-line react/only-export-components

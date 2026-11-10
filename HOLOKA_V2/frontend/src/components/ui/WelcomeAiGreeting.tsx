@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Building2, X, Bell, FileText, CreditCard, Wrench, CheckSquare, Calendar,
   CheckCircle2, ArrowRight, ShieldCheck, DoorOpen
@@ -298,7 +298,7 @@ export default function WelcomeAiGreeting({ onDone }: WelcomeAiGreetingProps) {
               </div>
               <span className="text-[11px] text-slate-400">
                 <ShieldCheck size={14} className="inline mr-1" />
-                Bảo mật B2B
+                {isVi ? 'Bảo mật B2B' : 'B2B Secure'}
               </span>
             </div>
 

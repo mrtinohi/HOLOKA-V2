@@ -16,4 +16,6 @@ public class Membership extends TimedEntity {
     public Membership(Workspace workspace, AppUser user, Role role) {
         this.workspace = workspace; this.user = user; this.role = role;
     }
+    public void updateRole(Role role) { this.role = role; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }

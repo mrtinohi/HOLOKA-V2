@@ -1,15 +1,13 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { login } from '../services/authService';
-import {
-  Loader2, Lock, Mail, Eye, EyeOff, ShieldCheck,
-  Zap, Building2, Sparkles, ArrowRight
-} from 'lucide-react';
+import { Loader2, Lock, Mail, Eye, EyeOff, ShieldCheck, Building2, Zap, ArrowRight, AlertCircle } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import { errorMessage } from '../services/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,227 +17,155 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { login: setAuth } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isVi = language === 'vi';
   const navigate = useNavigate();
-
-  const handleQuickFill = () => {
-    setEmail('admin@holoka.vn');
-    setPassword('Abcd1234@');
-    setError('');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     try {
-      const response = await login({ email, password });
+      const response = await login({ email: email.trim(), password });
       setAuth(response.accessToken, response.user);
       sessionStorage.setItem('holoka_just_logged_in', 'true');
       sessionStorage.removeItem('holoka_welcome_seen');
-      navigate('/dashboard');
-    } catch (err: any) {
-      console.error(err);
-      setError(
-        err.response?.data?.message ||
-        (t('login.error_invalid') !== 'login.error_invalid'
-          ? t('login.error_invalid')
-          : 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.')
-      );
+      if (response.user.platformAdmin) {
+        navigate('/platform/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex w-full font-sans bg-[#090d16] text-slate-100 overflow-hidden relative">
-      {/* ─── Top-Right Floating Controls ─── */}
-      <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
-        <ThemeToggle variant="icon" themeContext="dark" />
-        <LanguageSwitcher variant="pill" theme="dark" />
-      </div>
-
-      {/* ─── Ambient Multi-Color Background Aurora Mesh ─── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute -top-[25%] -left-[10%] w-[650px] h-[650px] rounded-full opacity-30 filter blur-[120px]"
-          style={{ background: 'radial-gradient(circle, #2563eb 0%, #1e3a8a 60%, transparent 80%)' }}
-        />
-        <div
-          className="absolute -bottom-[20%] -right-[10%] w-[750px] h-[750px] rounded-full opacity-25 filter blur-[140px]"
-          style={{ background: 'radial-gradient(circle, #38bdf8 0%, #0284c7 60%, transparent 80%)' }}
-        />
-        <div
-          className="absolute top-[40%] left-[35%] w-[500px] h-[500px] rounded-full opacity-15 filter blur-[100px]"
-          style={{ background: 'radial-gradient(circle, #0ea5e9 0%, transparent 70%)' }}
-        />
-
-        {/* Subtle Architectural Grid Lines - reduced opacity */}
-        <div
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-            backgroundSize: '64px 64px',
-          }}
-        />
-      </div>
-
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* LEFT PANEL: Flagship Brand Showcase & Live Features */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <div className="hidden lg:flex flex-col justify-between w-7/12 p-14 relative z-10 border-r border-white/5">
-        {/* Brand Header */}
-        <div>
-          <Logo size="xl" variant="horizontal" animate={true} />
+    <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
+      {/* ─── Left: brand panel (desktop) ─── */}
+      <aside
+        className="hidden lg:flex flex-col justify-between w-[46%] xl:w-[42%] p-10 relative overflow-hidden flex-shrink-0"
+        style={{ background: 'linear-gradient(160deg, #0b1526 0%, #12203c 55%, #0a1526 100%)' }}
+      >
+        {/* Subtle grid + glow */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div
+            className="absolute -top-32 -left-24 w-[520px] h-[520px] rounded-full opacity-25 blur-[120px]"
+            style={{ background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)' }}
+          />
+          <div
+            className="absolute -bottom-40 -right-24 w-[560px] h-[560px] rounded-full opacity-20 blur-[130px]"
+            style={{ background: 'radial-gradient(circle, #0ea5e9 0%, transparent 70%)' }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage:
+                'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+            }}
+          />
         </div>
 
-        {/* Core Value Proposition & Live Cards */}
-        <div className="max-w-xl my-auto py-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold mb-6 tracking-wide">
-            <Sparkles size={14} className="text-cyan-400" />
-            {t('login.hero_badge')}
+        <div className="relative z-10">
+          <div className="[&_span]:!text-white [&_span:last-child]:!text-slate-400">
+            <Logo size="lg" variant="horizontal" animate />
           </div>
+        </div>
 
-          <h2 className="text-4xl xl:text-5xl font-black text-white leading-tight tracking-tight mb-5 font-display">
+        <div className="relative z-10 max-w-lg">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/[0.07] text-blue-200 border border-white/10 mb-6">
+            {t('login.hero_badge')}
+          </span>
+
+          <h2
+            className="text-4xl xl:text-[2.75rem] font-bold text-white leading-[1.15] tracking-tight mb-4"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
             {t('login.hero_title_1')}{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-cyan-300 to-blue-300">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">
               {t('login.hero_title_2')}
             </span>
           </h2>
 
-          <p className="text-slate-300 text-[15px] leading-relaxed mb-8">
+          <p className="text-[15px] leading-relaxed text-slate-300/90 mb-8">
             {t('login.hero_subtitle')}
           </p>
 
-          {/* Feature Highlights Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md hover:border-indigo-500/30 transition-all duration-300 text-left">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3">
-                <Building2 size={18} />
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { icon: Building2, title: t('login.feature_1_title'), desc: t('login.feature_1_desc') },
+              { icon: Zap, title: t('login.feature_2_title'), desc: t('login.feature_2_desc') },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="p-4 rounded-2xl bg-white/[0.05] border border-white/10">
+                <Icon size={18} className="text-blue-300 mb-2.5" />
+                <h4 className="text-sm font-semibold text-white mb-1">{title}</h4>
+                <p className="text-xs leading-relaxed text-slate-400">{desc}</p>
               </div>
-              <h4 className="font-bold text-sm text-slate-200 mb-1">{t('login.feature_1_title')}</h4>
-              <p className="text-xs text-slate-400">{t('login.feature_1_desc')}</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-md hover:border-cyan-500/30 transition-all duration-300 text-left">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 mb-3">
-                <Zap size={18} />
-              </div>
-              <h4 className="font-bold text-sm text-slate-200 mb-1">{t('login.feature_2_title')}</h4>
-              <p className="text-xs text-slate-400">{t('login.feature_2_desc')}</p>
-            </div>
+            ))}
           </div>
 
-          {/* Quick Metrics Ticker */}
-          <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-8">
-            <div className="text-left">
-              <p className="text-2xl font-black text-white font-display">{t('login.metric_1_val')}</p>
-              <p className="text-xs text-slate-400">{t('login.metric_1_label')}</p>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="text-left">
-              <p className="text-2xl font-black text-cyan-400 font-display">{t('login.metric_2_val')}</p>
-              <p className="text-xs text-slate-400">{t('login.metric_2_label')}</p>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="text-left">
-              <p className="text-2xl font-black text-emerald-400 font-display">{t('login.metric_3_val')}</p>
-              <p className="text-xs text-slate-400">{t('login.metric_3_label')}</p>
-            </div>
+          <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-8">
+            {[
+              { val: t('login.metric_1_val'), label: t('login.metric_1_label'), cls: 'text-white' },
+              { val: t('login.metric_2_val'), label: t('login.metric_2_label'), cls: 'text-cyan-300' },
+              { val: t('login.metric_3_val'), label: t('login.metric_3_label'), cls: 'text-emerald-300' },
+            ].map(m => (
+              <div key={m.label}>
+                <p className={`text-xl font-bold ${m.cls}`} style={{ fontFamily: 'var(--font-display)' }}>{m.val}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">{m.label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Footer info */}
-        <div className="flex items-center justify-between text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
-            <span>{t('login.system_status')}</span>
-          </div>
-          <span>© {new Date().getFullYear()} HOLOKA SaaS</span>
+        <div className="relative z-10 flex items-center gap-2 text-xs text-slate-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>{t('login.system_status')}</span>
         </div>
-      </div>
+      </aside>
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/* RIGHT PANEL: High-End Glassmorphism Login Form       */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 relative z-10">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo View */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <Logo size="lg" variant="vertical" animate={true} />
-          </div>
+      {/* ─── Right: form ─── */}
+      <main className="flex-1 flex flex-col relative">
+        {/* Top controls */}
+        <div className="flex items-center justify-end gap-2 p-4 sm:p-5">
+          <ThemeToggle variant="icon" />
+          <LanguageSwitcher />
+        </div>
 
-          {/* Glass Form Card */}
-          <div
-            className="rounded-3xl p-8 sm:p-10 border relative overflow-hidden backdrop-blur-2xl"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-              borderColor: 'rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.15)',
-            }}
-          >
-            {/* Ambient Corner Accent */}
-            <div
-              className="absolute -top-16 -right-16 w-36 h-36 rounded-full opacity-30 filter blur-2xl pointer-events-none"
-              style={{ background: '#6366f1' }}
-            />
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-8 pb-10">
+          <div className="w-full max-w-[400px]">
+            <div className="lg:hidden flex justify-center mb-8">
+              <Logo size="lg" variant="vertical" animate />
+            </div>
 
-            {/* Form Title */}
-            <div className="mb-6 text-left">
-              <h3 className="text-2xl font-black text-white font-display tracking-tight">
+            <div className="mb-6">
+              <h1 className="text-[26px] font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
                 {t('login.title')}
-              </h3>
-              <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+              </h1>
+              <p className="text-sm mt-1.5" style={{ color: 'var(--text-muted)' }}>
                 {t('login.desc')}
               </p>
             </div>
 
-            {/* Quick Demo Fill Bar */}
-            <div
-              onClick={handleQuickFill}
-              className="mb-6 p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all duration-200 cursor-pointer flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-indigo-500/30 flex items-center justify-center text-cyan-300">
-                  <Sparkles size={14} />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-bold text-indigo-200 group-hover:text-white transition-colors">
-                    {t('login.demo_badge')}
-                  </p>
-                  <p className="text-[11px] text-slate-400">admin@holoka.vn • Abcd1234@</p>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-indigo-400 group-hover:text-cyan-300 flex items-center gap-1">
-                {t('login.demo_fill')} <ArrowRight size={13} />
-              </span>
-            </div>
-
-            {/* Error Message */}
             {error && (
               <div
                 role="alert"
-                className="mb-5 p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs font-semibold flex items-center gap-2 text-left"
+                className="mb-5 p-3 rounded-xl flex items-start gap-2 text-sm"
+                style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger-border)', color: 'var(--danger)' }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 flex-shrink-0" />
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Form Fields */}
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
-              {/* Email Input */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label
-                  htmlFor="login-email"
-                  className="block text-base font-bold text-slate-200 mb-2"
-                >
-                  {t('login.email_label')}
-                </label>
+                <label htmlFor="login-email" className="field-label">{t('login.email_label')}</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
-                    <Mail size={18} />
-                  </span>
+                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
                   <input
                     id="login-email"
                     type="email"
@@ -248,25 +174,16 @@ export default function LoginPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="admin@holoka.vn"
-                    className="w-full pl-11 pr-4 py-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base font-medium focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/25 transition-all duration-200 min-h-[52px]"
+                    className="input pl-10 text-[15px]"
+                    style={{ minHeight: 44 }}
                   />
                 </div>
               </div>
 
-              {/* Password Input */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label
-                    htmlFor="login-password"
-                    className="block text-sm font-bold text-slate-200"
-                  >
-                    {t('login.password_label')}
-                  </label>
-                </div>
+                <label htmlFor="login-password" className="field-label">{t('login.password_label')}</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
-                    <Lock size={18} />
-                  </span>
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
                   <input
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
@@ -274,55 +191,53 @@ export default function LoginPage() {
                     autoComplete="current-password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full pl-11 pr-12 py-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-slate-500 text-base font-medium focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/25 transition-all duration-200 min-h-[52px]"
+                    placeholder="••••••••••"
+                    className="input pl-10 pr-11 text-[15px]"
+                    style={{ minHeight: 44 }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    aria-label={showPassword ? (isVi ? 'Ẩn mật khẩu' : 'Hide password') : (isVi ? 'Hiện mật khẩu' : 'Show password')}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 btn btn-ghost btn-icon"
+                    style={{ minHeight: 32, width: 32 }}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </div>
 
-              {/* Submit Button */}
               <button
                 id="login-submit"
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-3 py-4 px-4 rounded-xl font-bold text-white text-base flex items-center justify-center gap-2.5 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:shadow-[0_6px_28px_rgba(37,99,235,0.6)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)',
-                }}
+                className="btn btn-primary w-full text-[15px]"
+                style={{ minHeight: 46 }}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
-                    <span>{t('login.btn_loading')}</span>
+                    <Loader2 size={17} className="animate-spin" />
+                    {t('login.btn_loading')}
                   </>
                 ) : (
                   <>
-                    <span>{t('login.btn_login')}</span>
-                    <ArrowRight size={17} />
+                    {t('login.btn_login')}
+                    <ArrowRight size={16} />
                   </>
                 )}
               </button>
             </form>
 
-            {/* Enterprise Security Badge */}
-            <div className="mt-8 pt-5 border-t border-white/10 flex items-center justify-center gap-2 text-[11px] text-slate-400">
-              <ShieldCheck size={14} className="text-emerald-400" />
+            <div
+              className="mt-7 pt-5 flex items-center justify-center gap-1.5 text-[11px]"
+              style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}
+            >
+              <ShieldCheck size={13} style={{ color: 'var(--success)' }} />
               <span>{t('login.security')}</span>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
-
-
-
-

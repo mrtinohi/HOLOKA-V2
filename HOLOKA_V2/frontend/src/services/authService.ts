@@ -8,7 +8,7 @@ export interface LoginRequest {
 export interface WorkspaceView {
   id: number;
   name: string;
-  role: 'OWNER' | 'MANAGER' | 'STAFF';
+  role: 'OWNER' | 'MANAGER' | 'STAFF' | 'SUPER_ADMIN';
 }
 
 export interface UserView {
@@ -52,4 +52,9 @@ export const getMe = async (): Promise<UserView> => {
 
 export const changePassword = async (currentPassword: string, newPassword: string) => {
   await api.put('/auth/change-password', { currentPassword, newPassword });
+};
+
+export const updateProfile = async (fullName: string): Promise<UserView> => {
+  const response = await api.put('/auth/profile', { fullName });
+  return response.data.data;
 };

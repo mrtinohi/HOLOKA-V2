@@ -49,6 +49,13 @@ public class AuthController {
     @GetMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
     public ApiResponse<UserView> me(@AuthenticationPrincipal AuthPrincipal principal) { return ApiResponse.ok(service.me(principal)); }
+    @PutMapping("/profile")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Update personal profile information")
+    public ApiResponse<UserView> updateProfile(@AuthenticationPrincipal AuthPrincipal principal,
+        @Valid @RequestBody UpdateProfileRequest body) {
+        return ApiResponse.ok(service.updateProfile(principal, body));
+    }
     @PutMapping("/change-password")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Change password and revoke every access/refresh session; sign in again afterwards")

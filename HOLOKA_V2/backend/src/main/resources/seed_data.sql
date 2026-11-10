@@ -27,15 +27,27 @@ DELETE FROM dbo.app_users WHERE id > 1;
 
 -- 1. Ensure UTF-8 names for default user & workspace
 UPDATE dbo.app_users 
-SET full_name = N'Quản Trị Viên HOLOKA' 
+SET full_name = N'Nguyễn Văn An (Chủ căn hộ)', platform_admin = 0 
 WHERE id = 1;
 
 UPDATE dbo.workspaces 
 SET name = N'Hệ Thống Bất Động Sản An Nhiên Living' 
 WHERE id = 1;
 
--- 2. Add Manager and Staff users
+-- 2. Add Super Admin, Manager and Staff users
 DECLARE @pwd VARCHAR(255) = '$2a$12$UPHVmMxbPMfGHQlWGfTPceahVzU4XWANISGrJmaes8sOduK9rFhky'; -- Abcd1234@
+
+IF NOT EXISTS (SELECT 1 FROM dbo.app_users WHERE email = 'superadmin@holoka.vn')
+BEGIN
+    INSERT INTO dbo.app_users (full_name, email, password_hash, enabled, platform_admin)
+    VALUES (N'HOLOKA Super Admin', 'superadmin@holoka.vn', @pwd, 1, 1);
+END;
+
+IF NOT EXISTS (SELECT 1 FROM dbo.app_users WHERE email = 'supperadmin@holoka.vn')
+BEGIN
+    INSERT INTO dbo.app_users (full_name, email, password_hash, enabled, platform_admin)
+    VALUES (N'HOLOKA Super Admin', 'supperadmin@holoka.vn', @pwd, 1, 1);
+END;
 
 IF NOT EXISTS (SELECT 1 FROM dbo.app_users WHERE email = 'manager@holoka.vn')
 BEGIN

@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, Sparkles, MessageSquare, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getDashboardOverview } from '../services/dashboardService';
-import type { OverviewData } from '../services/dashboardService';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getDashboardOverview, type OverviewData } from '../services/dashboardService';
 
-/* ── Suggested prompts ───────────────────────────────────────────────────── */
-const SUGGESTED = [
+const SUGGESTED_VI = [
   'Workspace đang hoạt động như thế nào?',
   'Có bao nhiêu phòng đang trống?',
   'Có hợp đồng nào sắp hết hạn không?',
@@ -14,7 +13,15 @@ const SUGGESTED = [
   'Cần tập trung xử lý vấn đề gì trước?',
 ];
 
-/* ── Message types ───────────────────────────────────────────────────────── */
+const SUGGESTED_EN = [
+  'How is the workspace performing?',
+  'How many units are currently vacant?',
+  'Are there any leases expiring soon?',
+  'Are there any urgent maintenance requests?',
+  'Summarize this month\'s financial performance?',
+  'What should I prioritize today?',
+];
+
 interface Message {
   id: number;
   role: 'user' | 'assistant';
@@ -22,107 +29,180 @@ interface Message {
   time: string;
 }
 
-/* ── Simple rule-based AI using real data ────────────────────────────────── */
-function generateResponse(input: string, data: OverviewData): string {
+/** Rule-based responder over real workspace metrics — bilingual. */
+function generateResponse(input: string, data: OverviewData, isVi: boolean): string {
   const q = input.toLowerCase();
-  const fmtCurrency = (n: number) =>
-    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+  const money = (n: number) =>
+    new Intl.NumberFormat(isVi ? 'vi-VN' : 'en-US', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0,
+    }).format(n);
 
-  // Overall
-  if (q.includes('tổng quan') || q.includes('hoạt động') || q.includes('như thế nào') || q.includes('tình hình')) {
-    return `📊 **Tổng quan workspace hiện tại:**
+  if (
+    q.includes('tổng quan') || q.includes('hoạt động') || q.includes('như thế nào') ||
+    q.includes('tình hình') || q.includes('perform') || q.includes('overview')
+  ) {
+    if (isVi) {
+      return `📊 **Tổng quan workspace hiện tại**
 
-• **Bất động sản:** ${data.totalProperties} property, ${data.totalBuildings} tòa nhà, ${data.totalRooms} phòng
+• **Bất động sản:** ${data.totalProperties} cơ sở, ${data.totalBuildings} tòa nhà, ${data.totalRooms} phòng
 • **Tỷ lệ lấp đầy:** ${data.occupancyRate.toFixed(1)}% (${data.occupiedRooms}/${data.totalRooms} phòng đang thuê)
 • **Phòng trống:** ${data.availableRooms} phòng
-• **Hợp đồng đang hiệu lực:** ${data.activeContracts}
-• **Doanh thu tháng này:** ${data.monthlyRevenue > 0 ? fmtCurrency(data.monthlyRevenue) : 'Chưa có dữ liệu'}
+• **Hợp đồng hiệu lực:** ${data.activeContracts}
+• **Doanh thu tháng này:** ${data.monthlyRevenue > 0 ? money(data.monthlyRevenue) : 'Chưa có dữ liệu'}
 
-${data.occupancyRate < 80 ? `⚠️ Tỷ lệ lấp đầy đang thấp hơn mức lý tưởng (80%). Cần ưu tiên lấp phòng trống.` : `✅ Tỷ lệ lấp đầy tốt!`}`;
+${data.occupancyRate < 80
+  ? '⚠️ Tỷ lệ lấp đầy đang dưới mức lý tưởng (80%). Nên ưu tiên lấp phòng trống.'
+  : '✅ Tỷ lệ lấp đầy đang ở mức tốt.'}`;
+    } else {
+      return `📊 **Current Workspace Overview**
+
+• **Properties:** ${data.totalProperties} properties, ${data.totalBuildings} buildings, ${data.totalRooms} units
+• **Occupancy Rate:** ${data.occupancyRate.toFixed(1)}% (${data.occupiedRooms}/${data.totalRooms} occupied)
+• **Vacant Units:** ${data.availableRooms} units
+• **Active Contracts:** ${data.activeContracts}
+• **Monthly Revenue:** ${data.monthlyRevenue > 0 ? money(data.monthlyRevenue) : 'No invoice data yet'}
+
+${data.occupancyRate < 80
+  ? '⚠️ Occupancy is below the 80% target. Prioritize marketing vacant units.'
+  : '✅ Occupancy is at a healthy rate.'}`;
+    }
   }
 
-  // Vacancy
-  if (q.includes('trống') || q.includes('phòng trống') || q.includes('vacancy')) {
-    return `🏠 **Tình trạng phòng trống:**
+  if (q.includes('trống') || q.includes('vacan')) {
+    if (isVi) {
+      return `🏠 **Tình trạng phòng trống**
 
-Hiện có **${data.availableRooms} phòng đang trống** trong tổng số ${data.totalRooms} phòng.
-
-${data.maintenanceRooms > 0 ? `• ${data.maintenanceRooms} phòng đang bảo trì (tạm thời không cho thuê)` : ''}
-• Tỷ lệ lấp đầy: **${data.occupancyRate.toFixed(1)}%**
+Hiện có **${data.availableRooms} phòng đang trống** trên tổng ${data.totalRooms} phòng.
+${data.maintenanceRooms > 0 ? `• ${data.maintenanceRooms} phòng đang bảo trì (tạm ngừng cho thuê)\n` : ''}• Tỷ lệ lấp đầy: **${data.occupancyRate.toFixed(1)}%**
 
 ${data.availableRooms > 5
-  ? '📋 **Đề xuất:** Số phòng trống đang cao. Cân nhắc điều chỉnh giá thuê hoặc tăng cường marketing để thu hút khách thuê mới.'
+  ? '📋 **Đề xuất:** Số phòng trống khá cao. Cân nhắc điều chỉnh giá thuê hoặc tăng cường đăng tin.'
   : '✅ Số phòng trống ở mức chấp nhận được.'}`;
+    } else {
+      return `🏠 **Vacancy Status**
+
+Currently **${data.availableRooms} units are vacant** out of ${data.totalRooms} total units.
+${data.maintenanceRooms > 0 ? `• ${data.maintenanceRooms} units under maintenance\n` : ''}• Occupancy rate: **${data.occupancyRate.toFixed(1)}%**
+
+${data.availableRooms > 5
+  ? '📋 **Recommendation:** Vacancy count is high. Consider move-in promotions or re-marketing.'
+  : '✅ Vacancy is within standard operating margins.'}`;
+    }
   }
 
-  // Contracts
-  if (q.includes('hợp đồng') || q.includes('hết hạn') || q.includes('contract')) {
-    return `📄 **Tình trạng hợp đồng:**
+  if (q.includes('hợp đồng') || q.includes('hết hạn') || q.includes('lease') || q.includes('contract') || q.includes('expir')) {
+    if (isVi) {
+      return `📄 **Tình trạng hợp đồng**
 
 • **Đang hiệu lực:** ${data.activeContracts} hợp đồng
 • **Sắp hết hạn (≤30 ngày):** ${data.contractsExpiringSoon} hợp đồng
 
 ${data.contractsExpiringSoon > 0
-  ? `⚠️ **Hành động cần thiết:** Có ${data.contractsExpiringSoon} hợp đồng sắp hết hạn. Hãy liên hệ khách thuê để gia hạn sớm, tránh để phòng bị trống đột ngột.
-
-📋 **Đề xuất:** Vào trang **Hợp đồng** để xem chi tiết và xử lý.`
+  ? `⚠️ Cần liên hệ khách thuê để gia hạn sớm, tránh để phòng trống đột ngột.\n\n📋 Mở trang **Hợp đồng** để xem chi tiết.`
   : '✅ Không có hợp đồng nào sắp hết hạn trong 30 ngày tới.'}`;
+    } else {
+      return `📄 **Lease Agreements Status**
+
+• **Active:** ${data.activeContracts} leases
+• **Expiring Soon (≤30 days):** ${data.contractsExpiringSoon} leases
+
+${data.contractsExpiringSoon > 0
+  ? `⚠️ Follow up with tenants for renewals to prevent unexpected vacancies.\n\n📋 Navigate to **Contracts & Leases** for details.`
+  : '✅ No leases are expiring within the next 30 days.'}`;
+    }
   }
 
-  // Maintenance
-  if (q.includes('bảo trì') || q.includes('maintenance') || q.includes('sửa chữa')) {
-    return `🔧 **Tình trạng bảo trì:**
+  if (q.includes('bảo trì') || q.includes('sự cố') || q.includes('sửa chữa') || q.includes('maint') || q.includes('repair')) {
+    if (isVi) {
+      return `🔧 **Tình trạng bảo trì**
 
-• **Yêu cầu đang mở:** ${data.openMaintenance} yêu cầu
+• **Yêu cầu đang mở:** ${data.openMaintenance}
 
 ${data.openMaintenance === 0
   ? '✅ Không có yêu cầu bảo trì nào đang chờ xử lý.'
-  : `⚠️ Có **${data.openMaintenance}** yêu cầu bảo trì chưa được xử lý.
+  : `⚠️ Có **${data.openMaintenance}** yêu cầu chưa được xử lý.
 
-📋 **Đề xuất:** 
-1. Phân loại theo mức độ ưu tiên (URGENT > HIGH > MEDIUM > LOW)
+📋 **Đề xuất:**
+1. Phân loại theo mức ưu tiên (Khẩn cấp → Cao → Trung bình → Thấp)
 2. Phân công nhân viên phụ trách
-3. Cập nhật trạng thái xử lý thường xuyên
+3. Cập nhật trạng thái thường xuyên
 
-Vào trang **Bảo trì** để xem và xử lý chi tiết.`}`;
+Mở trang **Bảo trì** để xử lý chi tiết.`}`;
+    } else {
+      return `🔧 **Maintenance Status**
+
+• **Open Tickets:** ${data.openMaintenance}
+
+${data.openMaintenance === 0
+  ? '✅ All facilities are operating normally. No open tickets.'
+  : `⚠️ There are **${data.openMaintenance}** open repair tickets pending dispatch.
+
+📋 **Recommendations:**
+1. Prioritize Urgent and High severity issues
+2. Assign technician or vendor
+3. Mark completed once tenant verifies
+
+Visit **Maintenance & Issues** for details.`}`;
+    }
   }
 
-  // Finance
-  if (q.includes('tài chính') || q.includes('doanh thu') || q.includes('tiền') || q.includes('revenue')) {
-    return `💰 **Tình hình tài chính tháng này:**
+  if (q.includes('tài chính') || q.includes('doanh thu') || q.includes('tiền') || q.includes('nợ') || q.includes('financ') || q.includes('revenu') || q.includes('debt')) {
+    if (isVi) {
+      return `💰 **Tình hình tài chính tháng này**
 
-• **Doanh thu:** ${data.monthlyRevenue > 0 ? fmtCurrency(data.monthlyRevenue) : 'Chưa có hóa đơn tháng này'}
-• **Chi phí:** ${data.monthlyExpense > 0 ? fmtCurrency(data.monthlyExpense) : '—'}
-• **Khoản nợ chưa thu:** ${data.outstandingPayments > 0 ? fmtCurrency(data.outstandingPayments) : 'Không có'}
+• **Doanh thu:** ${data.monthlyRevenue > 0 ? money(data.monthlyRevenue) : 'Chưa có hóa đơn tháng này'}
+• **Chi phí:** ${data.monthlyExpense > 0 ? money(data.monthlyExpense) : '—'}
+• **Công nợ chưa thu:** ${data.outstandingPayments > 0 ? money(data.outstandingPayments) : 'Không có'}
 
 ${data.outstandingPayments > 0
-  ? `⚠️ **Có ${fmtCurrency(data.outstandingPayments)} chưa được thanh toán.** Cần theo dõi và nhắc nhở khách thuê thanh toán đúng hạn.`
-  : '✅ Tất cả khoản thu đều đã được thanh toán.'}`;
+  ? `⚠️ Còn **${money(data.outstandingPayments)}** chưa thanh toán. Nên nhắc khách đúng hạn.`
+  : '✅ Tất cả khoản thu đã được thanh toán.'}`;
+    } else {
+      return `💰 **Monthly Financial Health**
+
+• **Revenue:** ${data.monthlyRevenue > 0 ? money(data.monthlyRevenue) : 'No invoices billed this month'}
+• **Expenses:** ${data.monthlyExpense > 0 ? money(data.monthlyExpense) : '—'}
+• **Overdue Receivables:** ${data.outstandingPayments > 0 ? money(data.outstandingPayments) : 'Zero overdue balance'}
+
+${data.outstandingPayments > 0
+  ? `⚠️ Outstanding balance of **${money(data.outstandingPayments)}** requires tenant reminders.`
+  : '✅ All billed receivables are settled.'}`;
+    }
   }
 
-  // Tasks
-  if (q.includes('công việc') || q.includes('task') || q.includes('ưu tiên') || q.includes('xử lý')) {
-    const issues = [];
-    if (data.openMaintenance > 0) issues.push(`🔴 ${data.openMaintenance} yêu cầu bảo trì cần xử lý`);
-    if (data.contractsExpiringSoon > 0) issues.push(`🟡 ${data.contractsExpiringSoon} hợp đồng sắp hết hạn`);
-    if (data.outstandingPayments > 0) issues.push(`🟡 Còn khoản thu chưa thanh toán`);
-    if (data.pendingTasks > 0) issues.push(`🔵 ${data.pendingTasks} task đang chờ xử lý`);
-    if (data.availableRooms > 3) issues.push(`⚪ ${data.availableRooms} phòng đang trống`);
+  if (q.includes('công việc') || q.includes('ưu tiên') || q.includes('xử lý') || q.includes('task') || q.includes('priorit')) {
+    const issues: string[] = [];
+    if (data.openMaintenance > 0) issues.push(isVi ? `🔴 ${data.openMaintenance} yêu cầu bảo trì cần xử lý` : `🔴 ${data.openMaintenance} open maintenance requests`);
+    if (data.outstandingPayments > 0) issues.push(isVi ? '🟡 Còn khoản thu chưa thanh toán' : '🟡 Overdue invoices awaiting collection');
+    if (data.contractsExpiringSoon > 0) issues.push(isVi ? `🟡 ${data.contractsExpiringSoon} hợp đồng sắp hết hạn` : `🟡 ${data.contractsExpiringSoon} leases expiring soon`);
+    if (data.pendingTasks > 0) issues.push(isVi ? `🔵 ${data.pendingTasks} công việc đang chờ` : `🔵 ${data.pendingTasks} pending tasks`);
+    if (data.availableRooms > 3) issues.push(isVi ? `⚪ ${data.availableRooms} phòng đang trống` : `⚪ ${data.availableRooms} vacant units to fill`);
 
-    return `🎯 **Thứ tự ưu tiên xử lý:**
+    if (isVi) {
+      return `🎯 **Thứ tự ưu tiên xử lý**
 
 ${issues.length === 0
-  ? '✅ Hiện tại không có vấn đề nào cần xử lý gấp. Hệ thống đang vận hành tốt!'
-  : issues.join('\n')
-}
+  ? '✅ Không có vấn đề nào cần xử lý gấp. Hệ thống đang vận hành tốt.'
+  : issues.join('\n')}
 
-${issues.length > 0 ? '\n💡 **Lời khuyên:** Tập trung xử lý các mục màu đỏ trước, sau đó đến vàng và xanh.' : ''}`;
+${issues.length > 0 ? '\n💡 Xử lý các mục đỏ trước, sau đó đến vàng và xanh.' : ''}`;
+    } else {
+      return `🎯 **Action Priority Order**
+
+${issues.length === 0
+  ? '✅ Operations running smoothly. No critical bottlenecks.'
+  : issues.join('\n')}
+
+${issues.length > 0 ? '\n💡 Tackle red items first, then yellow and blue.' : ''}`;
+    }
   }
 
-  // Default
-  return `🤖 Xin lỗi, tôi chưa hiểu câu hỏi của bạn. 
+  return isVi
+    ? `🤖 Tôi chưa hiểu câu hỏi này.
 
-Tôi có thể giúp bạn về:
+Tôi có thể hỗ trợ về:
 • **Tổng quan vận hành** — "Workspace đang hoạt động như thế nào?"
 • **Phòng trống** — "Có bao nhiêu phòng đang trống?"
 • **Hợp đồng** — "Có hợp đồng nào sắp hết hạn không?"
@@ -130,74 +210,73 @@ Tôi có thể giúp bạn về:
 • **Tài chính** — "Tình hình tài chính tháng này?"
 • **Ưu tiên** — "Cần xử lý vấn đề gì trước?"
 
-Hãy thử một trong các câu hỏi gợi ý bên dưới!`;
+Hãy thử một trong các gợi ý bên dưới.`
+    : `🤖 I didn't recognize this question.
+
+I can help you with:
+• **Operations Overview** — "How is the workspace performing?"
+• **Vacancies** — "How many units are currently vacant?"
+• **Leases** — "Are there any leases expiring soon?"
+• **Maintenance** — "Are there any urgent maintenance requests?"
+• **Financials** — "Summarize this month's financial performance?"
+• **Priorities** — "What should I prioritize today?"
+
+Try clicking one of the suggested prompts below.`;
 }
 
-/* ── Message Bubble ──────────────────────────────────────────────────────── */
 function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.role === 'user';
 
-  // Parse markdown-like bold
-  const parseContent = (text: string) => {
-    const lines = text.split('\n');
-    return lines.map((line, i) => {
+  const renderContent = (text: string) =>
+    text.split('\n').map((line, i) => {
       const parts = line.split(/\*\*(.*?)\*\*/g);
       return (
-        <span key={i}>
+        <span key={i} className="block min-h-[1.15em]">
           {parts.map((part, j) =>
-            j % 2 === 1 ? <strong key={j}>{part}</strong> : <span key={j}>{part}</span>
+            j % 2 === 1
+              ? <strong key={j} className="font-semibold">{part}</strong>
+              : <span key={j}>{part}</span>
           )}
-          {i < lines.length - 1 && <br />}
         </span>
       );
     });
-  };
 
   return (
-    <div className={`flex gap-3 fade-in ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      {/* Avatar */}
-      <div
-        className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{
-          background: isUser
-            ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
-            : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-        }}
+    <div className={`flex gap-2.5 fade-in ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      <span
+        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
+        style={{ background: isUser ? 'var(--text-secondary)' : 'var(--brand)' }}
       >
-        {isUser ? <User size={15} color="white" /> : <Bot size={15} color="white" />}
-      </div>
+        {isUser ? <User size={14} /> : <Bot size={14} />}
+      </span>
 
-      {/* Bubble */}
       <div
-        className="max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed"
+        className="max-w-[82%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed"
         style={isUser
-          ? { background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', borderBottomRightRadius: 4 }
-          : { background: 'var(--color-surface, #ffffff)', color: 'var(--color-text-primary, #1e293b)', border: '1px solid var(--color-border, #e2e8f0)', borderBottomLeftRadius: 4, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }
-        }
+          ? { background: 'var(--brand)', color: '#fff', borderBottomRightRadius: 4 }
+          : { background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderBottomLeftRadius: 4 }}
       >
-        {parseContent(msg.content)}
-        <p className="text-xs mt-2 opacity-60">{msg.time}</p>
+        {renderContent(msg.content)}
+        <p className="text-[10px] mt-1.5 opacity-60">{msg.time}</p>
       </div>
     </div>
   );
 }
 
-/* ── Main Page ───────────────────────────────────────────────────────────── */
 export default function AiAssistantPage() {
   const { user } = useAuth();
+  const { language } = useLanguage();
+  const isVi = language === 'vi';
   const wsId = user!.workspaces[0].id;
 
+  const now = () => new Date().toLocaleTimeString(isVi ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+
+  const greeting = isVi
+    ? `Xin chào! Tôi là **HOLOKA AI** 👋\n\nTôi phân tích dữ liệu thực tế từ workspace của bạn để trả lời các câu hỏi về vận hành bất động sản.\n\nHãy hỏi tôi bất cứ điều gì về phòng, hợp đồng, tài chính hay bảo trì.`
+    : `Hello! I am **HOLOKA AI** 👋\n\nI analyze live data from your workspace to answer questions about property management operations.\n\nAsk me anything regarding rooms, contracts, finance, or maintenance.`;
+
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 0,
-      role: 'assistant',
-      content: `Xin chào! Tôi là **HOLOKA AI** 👋
-
-Tôi phân tích dữ liệu thực tế từ workspace của bạn để trả lời các câu hỏi về vận hành bất động sản.
-
-Hãy hỏi tôi bất cứ điều gì về tình hình phòng, hợp đồng, tài chính hay bảo trì!`,
-      time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-    }
+    { id: 0, role: 'assistant', content: greeting, time: now() },
   ]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -205,137 +284,126 @@ Hãy hỏi tôi bất cứ điều gì về tình hình phòng, hợp đồng, t
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getDashboardOverview(wsId).then(setOverview).catch(() => {});
+    let active = true;
+    getDashboardOverview(wsId)
+      .then(ov => { if (active) setOverview(ov); })
+      .catch(() => {});
+    return () => { active = false; };
   }, [wsId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, thinking]);
 
   const send = async (text: string) => {
     if (!text.trim() || thinking) return;
 
-    const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    const userMsg: Message = { id: Date.now(), role: 'user', content: text, time: now };
-    setMessages(m => [...m, userMsg]);
+    setMessages(m => [...m, { id: Date.now(), role: 'user', content: text.trim(), time: now() }]);
     setInput('');
     setThinking(true);
 
-    // Simulate thinking delay
-    await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
+    setTimeout(() => {
+      const resp = overview
+        ? generateResponse(text, overview, isVi)
+        : (isVi ? 'Đang kết nối dữ liệu máy chủ… vui lòng thử lại sau giây lát.' : 'Connecting to operations data... please try again in a moment.');
 
-    const response = overview
-      ? generateResponse(text, overview)
-      : 'Đang tải dữ liệu workspace... Vui lòng thử lại sau giây lát.';
-
-    const botMsg: Message = {
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: response,
-      time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-    };
-    setMessages(m => [...m, botMsg]);
-    setThinking(false);
+      setMessages(m => [
+        ...m,
+        { id: Date.now(), role: 'assistant', content: resp, time: now() },
+      ]);
+      setThinking(false);
+    }, 450);
   };
 
+  const reset = () => {
+    setMessages([{ id: Date.now(), role: 'assistant', content: greeting, time: now() }]);
+  };
+
+  const suggestedPrompts = isVi ? SUGGESTED_VI : SUGGESTED_EN;
+
   return (
-    <div className="max-w-4xl mx-auto flex flex-col" style={{ height: 'calc(100vh - 56px - 48px)' }}>
+    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-8.5rem)] pb-4">
       {/* Header */}
-      <div className="fade-in flex items-center gap-4 mb-4 flex-shrink-0">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center"
-          style={{ background: 'linear-gradient(135deg,#4f46e5,#6366f1)' }}
-        >
-          <Bot size={22} color="white" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">HOLOKA AI</h1>
-            <span
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
-              style={{ background: 'rgba(16,185,129,0.1)', color: '#059669', border: '1px solid rgba(16,185,129,0.2)' }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Online
-            </span>
+      <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-2.5">
+          <span
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'var(--brand-soft)', border: '1px solid var(--brand-200)', color: 'var(--brand-text)' }}
+          >
+            <Sparkles size={17} />
+          </span>
+          <div>
+            <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+              {isVi ? 'Trợ lý ảo HOLOKA AI' : 'HOLOKA AI Operations Assistant'}
+            </h1>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {isVi ? 'Hỏi đáp tức thì về tình trạng vận hành, số liệu và công việc.' : 'Instant operations insights, metrics lookups, and guidance.'}
+            </p>
           </div>
-          <p className="text-sm" style={{ color: '#94a3b8' }}>
-            Phân tích dữ liệu workspace · Trả lời bằng tiếng Việt
-          </p>
         </div>
+
+        <button
+          type="button"
+          onClick={reset}
+          className="btn btn-ghost text-xs"
+          title={isVi ? 'Làm mới cuộc trò chuyện' : 'Reset conversation'}
+        >
+          <RefreshCw size={14} />
+          <span className="hidden sm:inline">{isVi ? 'Làm mới' : 'Reset'}</span>
+        </button>
       </div>
 
-      {/* Chat Area */}
-      <div
-        className="flex-1 overflow-y-auto rounded-2xl p-5 space-y-4 mb-4"
-        style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
-      >
-        {messages.map(msg => (
-          <MessageBubble key={msg.id} msg={msg} />
-        ))}
-
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto py-5 space-y-4">
+        {messages.map(m => <MessageBubble key={m.id} msg={m} />)}
         {thinking && (
-          <div className="flex gap-3 fade-in">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg,#4f46e5,#6366f1)' }}>
-              <Bot size={15} color="white" />
-            </div>
-            <div className="px-4 py-3 rounded-2xl rounded-bl-sm" style={{ background: '#fff', border: '1px solid #f1f5f9' }}>
-              <div className="flex items-center gap-1.5">
-                {[0, 0.2, 0.4].map(d => (
-                  <div
-                    key={d}
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: '#94a3b8', animation: 'pulse-soft 1.2s ease infinite', animationDelay: `${d}s` }}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="flex items-center gap-2 text-xs italic" style={{ color: 'var(--text-muted)' }}>
+            <Bot size={14} className="animate-pulse" />
+            <span>{isVi ? 'HOLOKA AI đang phân tích dữ liệu…' : 'HOLOKA AI is analyzing operations data…'}</span>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
       {/* Suggestions */}
-      <div className="flex gap-2 flex-wrap mb-3 flex-shrink-0">
-        {SUGGESTED.slice(0, 4).map(s => (
+      <div className="py-2.5 flex items-center gap-1.5 overflow-x-auto text-xs no-scrollbar">
+        <MessageSquare size={13} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+        {suggestedPrompts.map(prompt => (
           <button
-            key={s}
-            onClick={() => send(s)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
-            style={{ background: '#fff', color: '#475569', border: '1px solid #e2e8f0' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#a5b4fc'; (e.currentTarget as HTMLElement).style.color = '#6366f1'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'; (e.currentTarget as HTMLElement).style.color = '#475569'; }}
+            key={prompt}
+            type="button"
+            onClick={() => send(prompt)}
+            className="rounded-lg px-2.5 py-1 whitespace-nowrap transition-colors cursor-pointer flex-shrink-0"
+            style={{
+              background: 'var(--surface-subtle)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-secondary)',
+            }}
           >
-            <Sparkles size={11} style={{ color: '#a5b4fc' }} />
-            {s}
+            {prompt}
           </button>
         ))}
       </div>
 
       {/* Input */}
-      <div
-        className="flex items-center gap-3 p-3 rounded-2xl flex-shrink-0"
-        style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}
+      <form
+        onSubmit={e => { e.preventDefault(); send(input); }}
+        className="flex items-center gap-2 pt-2"
+        style={{ borderTop: '1px solid var(--border)' }}
       >
-        <MessageSquare size={18} style={{ color: '#94a3b8', flexShrink: 0 }} />
         <input
-          className="flex-1 text-sm bg-transparent outline-none"
-          style={{ color: '#0f172a' }}
-          placeholder="Hỏi bất kỳ điều gì về workspace của bạn…"
+          type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send(input)}
-          disabled={thinking}
+          placeholder={isVi ? 'Hỏi bất kỳ điều gì về workspace của bạn…' : 'Ask anything about your workspace…'}
+          className="input flex-1"
+          aria-label={isVi ? 'Nội dung câu hỏi' : 'Question input'}
         />
-        <button
-          onClick={() => send(input)}
-          disabled={!input.trim() || thinking}
-          className="w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-40"
-          style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
-        >
-          <Send size={15} color="white" />
+        <button type="submit" disabled={!input.trim() || thinking} className="btn btn-primary flex-shrink-0">
+          <Send size={15} />
+          <span className="hidden sm:inline">{isVi ? 'Gửi' : 'Send'}</span>
         </button>
-      </div>
+      </form>
     </div>
   );
 }

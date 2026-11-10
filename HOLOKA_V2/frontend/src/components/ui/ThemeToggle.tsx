@@ -6,58 +6,51 @@ import { useLanguage } from '../../contexts/LanguageContext';
 interface ThemeToggleProps {
   variant?: 'pill' | 'icon' | 'selector';
   className?: string;
+  /** Retained for backwards compatibility; the toggle follows the active theme. */
   themeContext?: 'dark' | 'light' | 'auto';
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({
-  variant = 'icon',
-  className = '',
-  themeContext = 'auto',
-}) => {
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ variant = 'icon', className = '' }) => {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   const { t } = useLanguage();
 
-  const isDarkUi = themeContext === 'dark' || (themeContext === 'auto' && resolvedTheme === 'dark');
+  const segmentClass = (active: boolean) =>
+    `flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+      active ? 'shadow-sm' : ''
+    }`;
+
+  const segmentStyle = (active: boolean): React.CSSProperties =>
+    active
+      ? { background: 'var(--surface)', color: 'var(--text-primary)' }
+      : { color: 'var(--text-muted)' };
 
   if (variant === 'pill') {
     return (
       <div
-        className={`inline-flex items-center p-0.5 rounded-xl border transition-all duration-200 select-none ${
-          isDarkUi
-            ? 'bg-slate-900/90 border-white/10 backdrop-blur-md'
-            : 'bg-slate-100 border-slate-200'
-        } ${className}`}
+        className={`inline-flex items-center gap-0.5 p-0.5 rounded-xl ${className}`}
+        style={{ background: 'var(--surface-subtle)', border: '1px solid var(--border)' }}
       >
         <button
           type="button"
           onClick={() => setTheme('light')}
-          title={t('theme.light', 'Chế độ Sáng')}
-          className={`p-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer flex items-center gap-1 ${
-            resolvedTheme === 'light'
-              ? 'bg-white text-amber-500 shadow-xs border border-slate-200/80 font-bold'
-              : isDarkUi
-                ? 'text-slate-400 hover:text-white'
-                : 'text-slate-500 hover:text-slate-900'
-          }`}
+          title={t('theme.light')}
+          aria-pressed={resolvedTheme === 'light'}
+          className={segmentClass(resolvedTheme === 'light')}
+          style={segmentStyle(resolvedTheme === 'light')}
         >
-          <Sun size={14} className={resolvedTheme === 'light' ? 'text-amber-500' : ''} />
-          <span className="text-[11px] hidden sm:inline">{t('theme.light_short', 'Sáng')}</span>
+          <Sun size={14} />
+          <span className="hidden sm:inline">{t('theme.light_short')}</span>
         </button>
-
         <button
           type="button"
           onClick={() => setTheme('dark')}
-          title={t('theme.dark', 'Chế độ Tối')}
-          className={`p-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer flex items-center gap-1 ${
-            resolvedTheme === 'dark'
-              ? 'bg-indigo-600 text-white shadow-xs font-bold'
-              : isDarkUi
-                ? 'text-slate-400 hover:text-white'
-                : 'text-slate-500 hover:text-slate-900'
-          }`}
+          title={t('theme.dark')}
+          aria-pressed={resolvedTheme === 'dark'}
+          className={segmentClass(resolvedTheme === 'dark')}
+          style={segmentStyle(resolvedTheme === 'dark')}
         >
-          <Moon size={14} className={resolvedTheme === 'dark' ? 'text-indigo-200' : ''} />
-          <span className="text-[11px] hidden sm:inline">{t('theme.dark_short', 'Tối')}</span>
+          <Moon size={14} />
+          <span className="hidden sm:inline">{t('theme.dark_short')}</span>
         </button>
       </div>
     );
@@ -65,29 +58,30 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   if (variant === 'selector') {
     const modes: { id: ThemeMode; label: string; icon: React.ElementType }[] = [
-      { id: 'light', label: t('theme.light', 'Sáng'), icon: Sun },
-      { id: 'dark', label: t('theme.dark', 'Tối'), icon: Moon },
-      { id: 'system', label: t('theme.system', 'Hệ thống'), icon: Monitor },
+      { id: 'light',  label: t('theme.light'),  icon: Sun },
+      { id: 'dark',   label: t('theme.dark'),   icon: Moon },
+      { id: 'system', label: t('theme.system'), icon: Monitor },
     ];
 
     return (
       <div className={`grid grid-cols-3 gap-2.5 ${className}`}>
-        {modes.map(mode => {
-          const Icon = mode.icon;
-          const isActive = theme === mode.id;
+        {modes.map(({ id, label, icon: Icon }) => {
+          const active = theme === id;
           return (
             <button
-              key={mode.id}
+              key={id}
               type="button"
-              onClick={() => setTheme(mode.id)}
-              className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? 'border-indigo-500 bg-indigo-50/70 text-indigo-700 dark:bg-indigo-950/60 dark:border-indigo-400 dark:text-indigo-300 shadow-sm'
-                  : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800/60'
-              }`}
+              onClick={() => setTheme(id)}
+              aria-pressed={active}
+              className="flex items-center justify-center gap-2 p-3 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
+              style={
+                active
+                  ? { background: 'var(--brand-soft)', border: '1px solid var(--brand)', color: 'var(--brand-text)' }
+                  : { background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
+              }
             >
-              <Icon size={16} className={isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
-              <span>{mode.label}</span>
+              <Icon size={16} />
+              <span>{label}</span>
             </button>
           );
         })}
@@ -95,30 +89,15 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     );
   }
 
-  // Default: icon button (single-click toggle)
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      title={
-        resolvedTheme === 'dark'
-          ? t('theme.switch_to_light', 'Chuyển sang giao diện Sáng')
-          : t('theme.switch_to_dark', 'Chuyển sang giao diện Tối')
-      }
-      aria-label="Toggle color theme"
-      className={`relative p-2 rounded-xl transition-all duration-200 cursor-pointer ${
-        isDarkUi
-          ? 'text-slate-300 hover:text-amber-300 hover:bg-slate-800/80'
-          : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-100'
-      } ${className}`}
+      title={resolvedTheme === 'dark' ? t('theme.switch_to_light') : t('theme.switch_to_dark')}
+      aria-label={resolvedTheme === 'dark' ? t('theme.switch_to_light') : t('theme.switch_to_dark')}
+      className={`btn btn-ghost btn-icon ${className}`}
     >
-      <div className="relative w-5 h-5 flex items-center justify-center">
-        {resolvedTheme === 'dark' ? (
-          <Sun size={19} className="text-amber-400 hover:rotate-90 transition-transform duration-300" />
-        ) : (
-          <Moon size={19} className="text-slate-700 hover:-rotate-12 transition-transform duration-300" />
-        )}
-      </div>
+      {resolvedTheme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
     </button>
   );
 };

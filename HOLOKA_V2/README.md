@@ -79,8 +79,8 @@ CREATE DATABASE holoka_newconcept;
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
-* API khả dụng tại: `http://localhost:8080/api`
-* Health check: `http://localhost:8080/actuator/health`
+* API khả dụng tại: `http://localhost:8081/api`
+* Health check: `http://localhost:8081/actuator/health`
 * Flyway sẽ tự động đồng bộ schema database khi khởi động.
 
 ### 3. Khởi Chạy Frontend
